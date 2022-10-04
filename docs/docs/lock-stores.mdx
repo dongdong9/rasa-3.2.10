@@ -1,0 +1,121 @@
+---
+id: lock-stores
+sidebar_label: Lock Stores
+title: Lock Stores
+description: Messages that are being processed lock Rasa for a given conversation ID to ensure that multiple incoming messages for that conversation do not interfere with each other. Rasa provides multiple implementations to maintain conversation locks.
+---
+
+Rasa uses a ticket lock mechanism to ensure that incoming messages for a given
+conversation ID are processed in the right order, and locks conversations while
+messages are actively processed. This means multiple Rasa servers can
+be run in parallel as replicated services, and clients do not necessarily need to
+address the same node when sending messages for a given conversation ID.
+
+## InMemoryLockStore (default)
+
+
+* **Description**
+
+  `InMemoryLockStore` is the default lock store. It maintains conversation locks
+  within a single process.
+
+  :::note
+  This lock store should not be used when multiple Rasa servers are run
+  parallel.
+
+  :::
+
+
+
+* **Configuration**
+
+  To use the `InMemoryTrackerStore` no configuration is needed.
+
+
+## RedisLockStore
+
+
+* **Description**
+
+  `RedisLockStore` maintains conversation locks using Redis as a persistence layer.
+  This is the recommended lock store for running a replicated set of Rasa servers.
+
+
+
+* **Configuration**
+
+  To set up Rasa with Redis the following steps are required:
+
+  1. Start your Redis instance
+
+  2. Add required configuration to your `endpoints.yml`
+
+     ```yaml-rasa
+     lock_store:
+         type: "redis"
+         url: <url of the redis instance, e.g. localhost>
+         port: <port of your redis instance, usually 6379>
+         password: <password used for authentication>
+         db: <number of your database within redis, e.g. 0>
+         key_prefix: <alphanumeric value to prepend to lock store keys>
+     ```
+
+  3. To start the Rasa Core server using your Redis backend, add the `--endpoints`
+  flag, e.g.:
+
+  ```bash
+  rasa run -m models --endpoints endpoints.yml
+  ```
+
+
+
+* **Parameters**
+
+  * `url` (default: `localhost`): The url of your redis instance
+
+  * `port` (default: `6379`): The port which redis is running on
+
+  * `db` (default: `1`): The number of your redis database
+
+  * `key_prefix` (default: `None`): The prefix to prepend to lock store keys. Must
+     be alphanumeric
+
+  * `password` (default: `None`): Password used for authentication
+    (`None` equals no authentication)
+
+  * `use_ssl` (default: `False`): Whether or not the communication is encrypted
+
+  * `ssl_keyfile` (default: `None`): Path to an ssl private key
+
+  * `ssl_certfile` (default: `None`): Path to an ssl certificate
+
+  * `ssl_ca_certs` (default: `None`): The path to a file of concatenated CA certificates in PEM format
+
+  * `socket_timeout` (default: `10`): Time in seconds after which an
+     error is raised if Redis doesn't answer
+
+
+## Custom Lock Store
+
+If you need a lock store which is not available out of the box, you can implement your own.
+This is done by extending the base class `LockStore`.
+
+Your custom lock store class must also implement the following methods:
+- `get_lock`: fetches lock for `conversation_id` from storage; requires `conversation_id` text parameter and returns `TicketLock` instance.
+[(source code - see for signature)](https://github.com/RasaHQ/rasa/blob/main/rasa/core/lock_store.py#L59).
+- `save_lock`: commit `lock` object to storage; requires `lock` parameter which is of type `TicketLock`and returns `None`.
+[(source code - see for signature)](https://github.com/RasaHQ/rasa/blob/main/rasa/core/lock_store.py#L67).
+- `delete_lock`: deletes lock for `conversation_id` from storage; requires `conversation_id` text parameter and returns `None`.
+[(source code - see for signature)](https://github.com/RasaHQ/rasa/blob/main/rasa/core/lock_store.py#L63).
+
+### Configuration
+
+Put the module path to your custom event broker and the parameters you require in your `endpoints.yml`:
+
+ ```yaml-rasa title="endpoints.yml"
+ lock_store:
+   type: path.to.your.module.Class
+   url: localhost
+   a_parameter: a value
+   another_parameter: another value
+ ```
