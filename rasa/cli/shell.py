@@ -98,7 +98,7 @@ def shell(args: argparse.Namespace) -> None:
 
     args.connector = "cmdline"
 
-    model = get_validated_path(args.model, "model", DEFAULT_MODELS_PATH)
+    model = get_validated_path(args.model, "model", DEFAULT_MODELS_PATH) #yd。获取训练好的模型的路径
 
     try:
         model = get_local_model(model)

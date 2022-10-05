@@ -17,8 +17,8 @@ def yaml_file_extension() -> Text:
 
 
 def is_likely_yaml_file(file_path: Union[Text, Path]) -> bool:
-    """Check if a file likely contains yaml.
-
+    """yd。功能：判断file_path所对应的文件是否为yaml格式的（即后缀为".yml", ".yaml"）
+    Check if a file likely contains yaml.
     Arguments:
         file_path: path to the file
 
@@ -73,8 +73,8 @@ def get_nlu_directory(paths: Optional[Union[Text, List[Text]]]) -> Text:
 def get_data_files(
     paths: Optional[Union[Text, List[Text]]], filter_predicate: Callable[[Text], bool]
 ) -> List[Text]:
-    """Recursively collects all training files from a list of paths.
-
+    """yd。功能：即从paths中找到符合条件的路径
+    Recursively collects all training files from a list of paths.
     Args:
         paths: List of paths to training files or folders containing them.
         filter_predicate: property to use when filtering the paths, e.g. `is_nlu_file`.

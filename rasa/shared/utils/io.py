@@ -418,8 +418,8 @@ YAML_LINE_MAX_WIDTH = 4096
 
 
 def is_key_in_yaml(file_path: Union[Text, Path], *keys: Text) -> bool:
-    """Checks if any of the keys is contained in the root object of the yaml file.
-
+    """yd。功能：打开file_path对应的文件，遍历每一行，判断是否存在以keys中的key为开头的行。例如判断是否存在以"stories"或"rules"开头的行
+    Checks if any of the keys is contained in the root object of the yaml file.
     Arguments:
         file_path: path to the yaml file
         keys: keys to look for
@@ -552,8 +552,8 @@ def raise_deprecation_warning(
 
 
 def read_validated_yaml(filename: Union[Text, Path], schema: Text) -> Any:
-    """Validates YAML file content and returns parsed content.
-
+    """yd。功能：读取filename对应路径的文件，过滤掉文件中被注释的内容，以字典的形式返回有效字段的内容，例如{'recipe': 'default.v1', 'language': 'en', 'pipeline': None, 'policies': None}
+    Validates YAML file content and returns parsed content.
     Args:
         filename: The path to the file which should be read.
         schema: The path to the schema file which should be used for validating the
@@ -573,8 +573,8 @@ def read_validated_yaml(filename: Union[Text, Path], schema: Text) -> Any:
 
 
 def read_config_file(filename: Union[Path, Text]) -> Dict[Text, Any]:
-    """Parses a yaml configuration file. Content needs to be a dictionary.
-
+    """yd。功能：读取filename对应路径的文件，过滤掉文件中被注释的内容，以字典的形式返回有效字段的内容，例如{'recipe': 'default.v1', 'language': 'en', 'pipeline': None, 'policies': None}
+    Parses a yaml configuration file. Content needs to be a dictionary.
     Args:
         filename: The path to the file which should be read.
 

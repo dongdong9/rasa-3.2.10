@@ -66,10 +66,10 @@ def print_train_or_instructions(args: argparse.Namespace) -> None:
             DEFAULT_CONFIG_PATH,
             DEFAULT_DATA_PATH,
             DEFAULT_MODELS_PATH,
-        )
+        ) #yd。完成模型的训练
         args.model = training_result.model
 
-        print_run_or_instructions(args)
+        print_run_or_instructions(args) #yd。这里是输入句子，获取机器人的回答的入口函数
 
     else:
         print_success(

@@ -229,6 +229,7 @@ def serve_application(
         backlog=int(os.environ.get(ENV_SANIC_BACKLOG, "100")),
         workers=number_of_workers,
     )
+    print("yd. 结束rasa对话")
 
 
 # noinspection PyUnusedLocal

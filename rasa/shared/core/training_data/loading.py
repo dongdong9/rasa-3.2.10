@@ -75,9 +75,9 @@ def load_data_from_files(
 
     for story_file in story_files:
 
-        reader = _get_reader(story_file, domain)
+        reader = _get_reader(story_file, domain) #yd。根据文件类型返回对应的reader
 
-        steps = reader.read_from_file(story_file)
+        steps = reader.read_from_file(story_file) #yd。如果是"data\\rules.yml"，则返回rule字段对应的RuleStep对象；如果是"data\\stories.yml"，则返回story字段对应的StoryStep对象。yml文件中steps字段的内容都被保存在events这个变量中
         story_steps.extend(steps)
 
     if exclusion_percentage and exclusion_percentage != 100:

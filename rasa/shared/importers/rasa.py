@@ -31,13 +31,13 @@ class RasaFileImporter(TrainingDataImporter):
 
         self._nlu_files = rasa.shared.data.get_data_files(
             training_data_paths, rasa.shared.data.is_nlu_file
-        )
+        ) #yd。从training_data_paths目录下找出NLU文件所在的路径，即找到"data\\nlu.yml"
         self._story_files = rasa.shared.data.get_data_files(
             training_data_paths, YAMLStoryReader.is_stories_file
-        )
+        )#yd。从training_data_paths目录下找出存在以"stories"或"rules"开头的行的yml文件，即找到"data\\rules.yml"和"data\\stories.yml"
         self._conversation_test_files = rasa.shared.data.get_data_files(
             training_data_paths, YAMLStoryReader.is_test_stories_file
-        )
+        )#yd。从training_data_paths目录下找出文件名前缀为"test_"且存在以"stories"或"rules"开头的行的文件，返回结果为[]
 
         self.config_file = config_file
 

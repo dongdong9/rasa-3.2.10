@@ -163,8 +163,9 @@ class YAMLStoryReader(StoryReader):
 
     @classmethod
     def is_stories_file(cls, file_path: Union[Text, Path]) -> bool:
-        """Check if file contains Core training data or rule data in YAML format.
-
+        """yd。功能：判断file_path所对应的文件是否为yaml格式的（即后缀为".yml", ".yaml"）。
+                   打开file_path对应的文件，遍历每一行，判断是否存在以"stories"或"rules"开头的行。
+        Check if file contains Core training data or rule data in YAML format.
         Args:
             file_path: Path of the file to check.
 

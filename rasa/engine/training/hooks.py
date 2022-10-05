@@ -135,6 +135,7 @@ class LoggingHook(GraphNodeHook):
         output: Any,
         input_hook_data: Dict,
     ) -> None:
+        #yd。从cache中restore组件，例如" Restored component 'CountVectorsFeaturizer' from cache."、"Restored component 'TEDPolicy' from cache."
         """Logs when a component finished its training."""
         node = self._pruned_schema.nodes[node_name]
 

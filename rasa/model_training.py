@@ -118,7 +118,9 @@ def train(
         config, domain, training_files
     )
 
+    # yd。得到RuleStep和StoryStep（分别由"data\\rules.yml"rule和"data\\stories.yml"中的story字段构成）组成的StoryGraph
     stories = file_importer.get_stories()
+
     nlu_data = file_importer.get_nlu_data()
 
     training_type = TrainingType.BOTH
@@ -197,7 +199,7 @@ def _train_graph(
 
     is_finetuning = model_to_finetune is not None
 
-    config = file_importer.get_config()
+    config = file_importer.get_config() #yd。以dict的形式返回config.yml中每个字段的内容，例如config = {'recipe': 'default.v1', 'language': 'en', 'pipeline': None, 'policies': None}
     recipe = Recipe.recipe_for_name(config.get("recipe"))
     config, _missing_keys, _configured_keys = recipe.auto_configure(
         file_importer.get_config_file_for_auto_config(),
@@ -237,7 +239,8 @@ def _train_graph(
                 full_model_path,
                 force_retraining=force_full_training,
                 is_finetuning=is_finetuning,
-            )
+            ) #yd。这个方法是完成真正的训练动作，得到训练模型，例如'models\20221005-161256-mechanical-ragdoll.tar.gz'
+
             rasa.shared.utils.cli.print_success(
                 f"Your Rasa model is trained and saved at '{full_model_path}'."
             )

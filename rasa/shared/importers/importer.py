@@ -100,6 +100,7 @@ class TrainingDataImporter(ABC):
         training_data_paths: Optional[List[Text]] = None,
     ) -> "TrainingDataImporter":
         """Loads a `TrainingDataImporter` instance from a configuration file."""
+        # yd。读取config_path对应对配置文件，过滤被注释的内容，以dict的形式返回有效的字段内容。例如config = {'recipe': 'default.v1', 'language': 'en', 'pipeline': None, 'policies': None}
         config = rasa.shared.utils.io.read_config_file(config_path)
         return TrainingDataImporter.load_from_dict(
             config, config_path, domain_path, training_data_paths
@@ -148,6 +149,14 @@ class TrainingDataImporter(ABC):
         domain_path: Optional[Text] = None,
         training_data_paths: Optional[List[Text]] = None,
     ) -> "TrainingDataImporter":
+        """
+        yd。功能：
+        :param config: 以dict的形式保存config.yml中每个字段的内容，例如config = {'recipe': 'default.v1', 'language': 'en', 'pipeline': None, 'policies': None}
+        :param config_path:
+        :param domain_path:
+        :param training_data_paths:
+        :return:
+        """
         """Loads a `TrainingDataImporter` instance from a dictionary."""
         from rasa.shared.importers.rasa import RasaFileImporter
 
