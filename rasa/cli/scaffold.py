@@ -126,13 +126,19 @@ def print_run_or_instructions(args: argparse.Namespace) -> None:
 
 def init_project(args: argparse.Namespace, path: Text) -> None:
     """Inits project."""
-    os.chdir(path)
-    create_initial_project(".")
+    os.chdir(path) #yd。修改当前的工作目录至path所对应的路径，执行了这句后，在执行os.getcwd()，返回的路径即为path对应的值
+    print_success(f"当前工作目录已经被切换，新的os.getcwd() = {os.getcwd()}") #yd。提示当前工作目录
+    create_initial_project(".") #yd。将"rasa\\cli\\scaffold\\initial_project"下的文件模板拷贝到path所对应的文件夹下，用于初始化rasa project
     print(f"Created project directory at '{os.getcwd()}'.")
     print_train_or_instructions(args)
 
 
 def create_initial_project(path: Text) -> None:
+    """
+    yd。功能：将"rasa\\cli\\scaffold\\initial_project"下的文件模板拷贝到path所对应的文件夹下，用于初始化rasa project
+    :param path:
+    :return:
+    """
     """Creates directory structure and templates for initial project."""
     from distutils.dir_util import copy_tree
 
@@ -140,10 +146,14 @@ def create_initial_project(path: Text) -> None:
 
 
 def scaffold_path() -> Text:
+    """
+    yd。功能：获取"rasa\\cli\\scaffold\\initial_project"这个路径，因为这个文件夹下保存着初始化一个rasa project所需的文件模板
+    :return:
+    """
     import pkg_resources
 
-    return pkg_resources.resource_filename(__name__, "initial_project")
-
+    extracted_scaffold_path = pkg_resources.resource_filename(__name__, "initial_project") #yd。__name__变量的值为当前.py文件的名称，此时它的值为"rasa.cli.scaffold"
+    return extracted_scaffold_path
 
 def print_cancel() -> None:
     print_success("Ok. You can continue setting up by running 'rasa init' 🙋🏽‍♀️")
@@ -155,7 +165,7 @@ def _ask_create_path(path: Text) -> None:
 
     should_create = questionary.confirm(
         f"Path '{path}' does not exist 🧐. Create path?"
-    ).ask()
+    ).ask() #yd。确认是否要创建path对应的路径，默认为True，即需要创建
 
     if should_create:
         try:
@@ -185,7 +195,7 @@ def _ask_overwrite(path: Text) -> None:
 def run(args: argparse.Namespace) -> None:
     import questionary
 
-    print_success("Welcome to Rasa! 🤖\n")
+    print_success("Welcome to Rasa! 🤖\n") #yd。打印绿色的提示信息
     if args.no_prompt:
         print(
             f"To get started quickly, an "
@@ -205,21 +215,39 @@ def run(args: argparse.Namespace) -> None:
     if args.init_dir is not None:
         path = args.init_dir
     else:
-        path = (
-            questionary.text(
-                "Please enter a path where the project will be "
-                "created [default: current directory]"
-            )
-            .skip_if(args.no_prompt, default="")
-            .ask()
-        )
-        # set the default directory. we can't use the `default` property
-        # in questionary as we want to avoid showing the "." in the prompt as the
-        # initial value. users tend to overlook it and it leads to invalid
-        # paths like: ".C:\mydir".
-        # Can't use `if not path` either, as `None` will be handled differently (abort)
-        if path == "":
-            path = "."
+        if 0:
+            path = (
+                questionary.text(
+                    "Please enter a path where the project will be "
+                    "created [default: current directory]"
+                )
+                .skip_if(args.no_prompt, default="")
+                .ask()
+            ) #yd。获取输入的project_path
+            # set the default directory. we can't use the `default` property
+            # in questionary as we want to avoid showing the "." in the prompt as the
+            # initial value. users tend to overlook it and it leads to invalid
+            # paths like: ".C:\mydir".
+            # Can't use `if not path` either, as `None` will be handled differently (abort)
+            if path == "": #yd。如果没有指定project path，则默认使用当前
+                path = "."
+        else:
+            for_debug_path = "rasa_demo_yd"
+            path = (
+                questionary.text(
+                    "Please enter a path where the project will be "
+                    "created [default: {}]".format(for_debug_path)                )
+                    .skip_if(args.no_prompt, default="")
+                    .ask()
+            )  # yd。获取输入的project_path
+            # set the default directory. we can't use the `default` property
+            # in questionary as we want to avoid showing the "." in the prompt as the
+            # initial value. users tend to overlook it and it leads to invalid
+            # paths like: ".C:\mydir".
+            # Can't use `if not path` either, as `None` will be handled differently (abort)
+            if path == "":  # yd。如果没有指定project path，则默认使用当前
+                #path = "."
+                path = for_debug_path # yd。用于调试
 
     if args.no_prompt and not os.path.isdir(path):
         print_error_and_exit(f"Project init path '{path}' not found.")
