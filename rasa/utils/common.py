@@ -34,6 +34,9 @@ from rasa.constants import (
 from rasa.shared.constants import DEFAULT_LOG_LEVEL, ENV_LOG_LEVEL, TCP_PROTOCOL
 import rasa.shared.utils.io
 
+from rasa.constants import RASA_DEMO_FILES_DIR_PATH
+from rasa.shared.utils.cli import print_success
+
 logger = logging.getLogger(__name__)
 
 T = TypeVar("T")
@@ -504,3 +507,9 @@ def find_unavailable_packages(package_names: List[Text]) -> Set[Text]:
 def module_path_from_class(clazz: Type) -> Text:
     """Return the module path of an instance's class."""
     return clazz.__module__ + "." + clazz.__name__
+
+def change_cur_work_dir():
+    #yd。下面是切换当前工作目录
+    print(f"当前os.getcwd() = {os.getcwd()}")
+    os.chdir(RASA_DEMO_FILES_DIR_PATH) #yd。修改当前的工作目录至path所对应的路径，执行了这句后，在执行os.getcwd()，返回的路径即为path对应的值
+    print_success(f"当前工作目录已经被切换，新的os.getcwd() = {os.getcwd()}") #yd。提示当前工作目录

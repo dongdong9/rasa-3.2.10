@@ -132,6 +132,11 @@ class MessageProcessor:
     async def handle_message(
         self, message: UserMessage
     ) -> Optional[List[Dict[Text, Any]]]:
+        """
+        yd。功能：用processor处理一条message
+        :param message: UserMessage对象，保存的是用户输入的信息。其中message.text是用户输入的文本，例如"hello"
+        :return:
+        """
         """Handle a single message with this processor."""
         # preprocess message if necessary
         tracker = await self.log_message(message, should_save_tracker=False)
@@ -158,8 +163,8 @@ class MessageProcessor:
     async def run_action_extract_slots(
         self, output_channel: OutputChannel, tracker: DialogueStateTracker
     ) -> DialogueStateTracker:
-        """Run action to extract slots and update the tracker accordingly.
-
+        """yd。这里是
+        Run action to extract slots and update the tracker accordingly.
         Args:
             output_channel: Output channel associated with the incoming user message.
             tracker: A tracker representing a conversation state.
@@ -637,7 +642,7 @@ class MessageProcessor:
         if self.http_interpreter:
             parse_data = await self.http_interpreter.parse(message)
         else:
-            parse_data = self._parse_message_with_graph(message, only_output_properties)
+            parse_data = self._parse_message_with_graph(message, only_output_properties) #yd。得到message对应的intent类别排序结果
 
         logger.debug(
             "Received user message '{}' with intent '{}' "
@@ -699,7 +704,7 @@ class MessageProcessor:
                 metadata=message.metadata,
             ),
             self.domain,
-        )
+        ) #yd。将解析后的结果更新到tracker中
 
         if parse_data["entities"]:
             self._log_slots(tracker)
@@ -797,7 +802,7 @@ class MessageProcessor:
     ) -> None:
         """Send bot messages, schedule and cancel reminders that are logged
         in the events array."""
-
+        #yd。这里是处理用户输入文本，并产生回复的地方
         await self._send_bot_messages(events, tracker, output_channel)
         await self._schedule_reminders(events, tracker, output_channel)
         await self._cancel_reminders(events, tracker)

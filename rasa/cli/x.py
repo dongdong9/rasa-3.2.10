@@ -344,7 +344,7 @@ def _validate_domain(domain_path: Text) -> None:
             "The provided domain file could not be loaded. " "Error: {}".format(e)
         )
 
-
+#yd。执行命令"rasa x"调用本方法。但是rasa 3.0及以上版本不支持命令"rasa x"
 def rasa_x(args: argparse.Namespace) -> None:
     from rasa.cli.utils import signal_handler
 

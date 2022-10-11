@@ -430,6 +430,14 @@ def _create_data_generator(
     max_stories: Optional[int] = None,
     use_conversation_test_files: bool = False,
 ) -> "TrainingDataGenerator":
+    """
+    yd。功能：产生包含被测试的stories文件（默认为tests/test_stories.yml）内容的generator
+    :param resource_name:
+    :param agent:
+    :param max_stories:
+    :param use_conversation_test_files:
+    :return:
+    """
     from rasa.shared.core.generator import TrainingDataGenerator
 
     tmp_domain_path = Path(tempfile.mkdtemp()) / "domain.yaml"
@@ -438,7 +446,7 @@ def _create_data_generator(
     test_data_importer = TrainingDataImporter.load_from_dict(
         training_data_paths=[resource_name], domain_path=str(tmp_domain_path)
     )
-    if use_conversation_test_files:
+    if use_conversation_test_files:#yd。功能：读取test_data_importer._conversation_test_files对应的yml文件（默认为tests/test_stories.yml）
         story_graph = test_data_importer.get_conversation_tests()
     else:
         story_graph = test_data_importer.get_stories()
@@ -1072,7 +1080,7 @@ async def test(
     """Run the evaluation of the stories, optionally plot the results.
 
     Args:
-        stories: the stories to evaluate on
+        stories: the stories to evaluate on。#yd。即指明要测试的stories文件对应的文件夹
         agent: the agent
         max_stories: maximum number of stories to consider
         out_directory: path to directory to results to
@@ -1090,7 +1098,7 @@ async def test(
     """
     from rasa.model_testing import get_evaluation_metrics
 
-    generator = _create_data_generator(stories, agent, max_stories, e2e)
+    generator = _create_data_generator(stories, agent, max_stories, e2e) #yd。获取包含被测试的stories文件（默认为tests/test_stories.yml）内容的generator
     completed_trackers = generator.generate_story_trackers()
 
     story_evaluation, _, entity_results = await _collect_story_predictions(

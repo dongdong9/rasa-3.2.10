@@ -13,7 +13,7 @@ from rasa.shared.core.domain import InvalidDomain, Domain
 from rasa.shared.core.training_data.story_reader.yaml_story_reader import (
     YAMLStoryReader,
 )
-
+from rasa.shared.utils.cli import print_success
 logger = logging.getLogger(__name__)
 
 
@@ -29,15 +29,20 @@ class RasaFileImporter(TrainingDataImporter):
 
         self._domain_path = domain_path
 
+        print(f"\n-----开始为self._nlu_files赋值")
         self._nlu_files = rasa.shared.data.get_data_files(
             training_data_paths, rasa.shared.data.is_nlu_file
-        ) #yd。从training_data_paths目录下找出NLU文件所在的路径，即找到"data\\nlu.yml"
+        ) #yd。从training_data_paths目录下找出NLU文件所在的路径，即找到".\\data\\nlu.yml"
+
+        print(f"\n-----开始为self._story_files赋值")
         self._story_files = rasa.shared.data.get_data_files(
             training_data_paths, YAMLStoryReader.is_stories_file
-        )#yd。从training_data_paths目录下找出存在以"stories"或"rules"开头的行的yml文件，即找到"data\\rules.yml"和"data\\stories.yml"
+        )#yd。从training_data_paths目录下找出存在以"stories"或"rules"开头的行的yml文件，即找到".\\data\\rules.yml"、".\\data\\stories.yml"和'.\\tests\\test_stories.yml'
+
+        print(f"\n-----开始为self._conversation_test_files赋值")
         self._conversation_test_files = rasa.shared.data.get_data_files(
             training_data_paths, YAMLStoryReader.is_test_stories_file
-        )#yd。从training_data_paths目录下找出文件名前缀为"test_"且存在以"stories"或"rules"开头的行的文件，返回结果为[]
+        )#yd。从training_data_paths目录下找出文件名前缀为"test_"且存在以"stories"或"rules"开头的行的文件，返回结果为['.\\tests\\test_stories.yml']
 
         self.config_file = config_file
 
@@ -63,6 +68,7 @@ class RasaFileImporter(TrainingDataImporter):
 
     def get_conversation_tests(self) -> StoryGraph:
         """Retrieves conversation test stories (see parent class for full docstring)."""
+        #yd。功能：读取self._conversation_test_files对应的yml文件，即'.\\tests\\test_stories.yml'
         return utils.story_graph_from_paths(
             self._conversation_test_files, self.get_domain()
         )
@@ -85,5 +91,7 @@ class RasaFileImporter(TrainingDataImporter):
                 f"Loading domain from '{self._domain_path}' failed. Using "
                 f"empty domain. Error: '{e}'"
             )
+        else:
+            print_success(f"yd。成功加载self._domain_path = {self._domain_path}对应的文件")
 
         return domain

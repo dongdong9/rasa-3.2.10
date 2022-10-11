@@ -15,6 +15,8 @@ from rasa.exceptions import PublishingError
 from rasa.shared.exceptions import RasaException
 from rasa.core.brokers.pika import PikaEventBroker
 
+from rasa.utils.common import change_cur_work_dir
+
 if typing.TYPE_CHECKING:
     from rasa.core.brokers.broker import EventBroker
     from rasa.core.tracker_store import TrackerStore
@@ -175,8 +177,11 @@ def export_trackers(args: argparse.Namespace) -> None:
     """
     asyncio.run(_export_trackers(args))
 
-
+#yd。执行命令"rasa export"后调用本方法
 async def _export_trackers(args: argparse.Namespace) -> None:
+
+    #yd。下面是切换当前工作目录
+    change_cur_work_dir()
 
     _assert_max_timestamp_is_greater_than_min_timestamp(args)
 

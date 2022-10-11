@@ -17,6 +17,8 @@ import rasa.shared.utils.cli
 import rasa.utils.common
 import rasa.shared.utils.io
 
+from rasa.utils.common import change_cur_work_dir
+
 if TYPE_CHECKING:
     from rasa.validator import Validator
 
@@ -129,13 +131,22 @@ def _append_story_structure_arguments(parser: argparse.ArgumentParser) -> None:
     )
     default_arguments.add_config_param(parser)
 
-
+#yd。执行命令"rasa  data split nlu"调用本方法
 def split_nlu_data(args: argparse.Namespace) -> None:
+    """
+    yd。功能：将"data/nlu.yml"切分为training_data.yml和test_data.yml（默认比例为8:2），保存在train_test_split文件夹下。
+    由于NLG的数据是分开保存的，故得到的yml有四个，分别为nlg_test_data.yml、test_data.yml、nlg_training_data.yml、training_data.yml
+    :param args:
+    :return:
+    """
     """Load data from a file path and split the NLU data into test and train examples.
 
     Args:
         args: Commandline arguments
     """
+    #yd。下面是切换当前工作目录
+    change_cur_work_dir()
+
     data_path = rasa.cli.utils.get_validated_path(args.nlu, "nlu", DEFAULT_DATA_PATH)
     data_path = rasa.shared.data.get_nlu_directory(data_path)
 
@@ -144,12 +155,14 @@ def split_nlu_data(args: argparse.Namespace) -> None:
 
     train, test = nlu_data.train_test_split(args.training_fraction, args.random_seed)
 
+    #yd。参数args.out表示切分后的文件的所在的文件夹名称，默认值为train_test_split。
     train.persist(args.out, filename=f"training_data{extension}")
     test.persist(args.out, filename=f"test_data{extension}")
 
     telemetry.track_data_split(args.training_fraction, "nlu")
+    print("yd。将data/nlu.yml切分为training_data.yml和test_data.yml，保存在train_test_split文件夹下")
 
-
+#yd。执行命令"rasa data validate"调用本方法
 def validate_files(args: argparse.Namespace, stories_only: bool = False) -> None:
     """Validates either the story structure or the entire project.
 
@@ -158,6 +171,9 @@ def validate_files(args: argparse.Namespace, stories_only: bool = False) -> None
         stories_only: If `True`, only the story structure is validated.
     """
     from rasa.validator import Validator
+
+    #yd。下面是切换当前工作目录
+    change_cur_work_dir()
 
     config = rasa.cli.utils.get_validated_path(
         args.config, "config", DEFAULT_CONFIG_PATH, none_is_valid=True
@@ -176,13 +192,14 @@ def validate_files(args: argparse.Namespace, stories_only: bool = False) -> None
             _validate_domain(validator)
             and _validate_nlu(validator, args)
             and _validate_story_structure(validator, args)
-        )
+        ) #yd。这里的all_good是domain、nlu和story三项都检查完后的结果
 
     telemetry.track_validate_files(all_good)
     if not all_good:
         rasa.shared.utils.cli.print_error_and_exit(
             "Project validation completed with errors."
         )
+    print("yd。完成了数据校验")
 
 
 def validate_stories(args: argparse.Namespace) -> None:

@@ -16,6 +16,7 @@ from rasa.shared.importers.importer import TrainingDataImporter
 import rasa.shared.utils.cli
 import rasa.utils.common
 
+from rasa.utils.common import change_cur_work_dir
 
 logger = logging.getLogger(__name__)
 
@@ -54,8 +55,21 @@ def add_subparser(
     arguments.set_interactive_arguments(interactive_parser)
     arguments.set_interactive_core_arguments(interactive_core_parser)
 
-
+#yd。执行命令"rasa interactive"调用本方法
 def interactive(args: argparse.Namespace) -> None:
+    """
+    yd。功能：交互式训练，注意：要将当前工作目录设置为config.yml所在的文件夹。
+    在用户输入消息后，命令行界面会打印输出该消息的一系列信息，让用户判断识别结果是否正确。这些信息包括:
+    ①、该消息的意图intent（如 greet）；
+    ②、抽取的实体entities、机器人的响应类型（如action_listen，该响应表示机器人停止预测并等待用户的输入）；
+    ③、机器人需要执行的动作（如utter_greet）。
+    :param args:
+    :return:
+    """
+
+    #yd。下面是切换当前工作目录
+    change_cur_work_dir()
+
     _set_not_required_args(args)
     file_importer = TrainingDataImporter.load_from_config(
         args.config, args.domain, args.data if not args.core_only else [args.stories]

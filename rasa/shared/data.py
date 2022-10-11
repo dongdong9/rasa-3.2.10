@@ -66,8 +66,8 @@ def get_nlu_directory(paths: Optional[Union[Text, List[Text]]]) -> Text:
     Returns:
         Path to temporary directory containing all found NLU training files.
     """
-    nlu_files = get_data_files(paths, is_nlu_file)
-    return _copy_files_to_new_dir(nlu_files)
+    nlu_files = get_data_files(paths, is_nlu_file) #yd。找到nlu.yml文件的路径列表，例如["data/nlu.yml"]
+    return _copy_files_to_new_dir(nlu_files) #yd。将nlu_files下的文件都复制到新创建的临时文件夹中，返回新创建的临时文件路径，
 
 
 def get_data_files(
@@ -164,6 +164,11 @@ def is_config_file(file_path: Text) -> bool:
 
 
 def _copy_files_to_new_dir(files: Iterable[Text]) -> Text:
+    """
+    yd。功能：将files文件夹下的所有文件复制到一个临时文件夹下，并返回临时文件夹的路径
+    :param files:
+    :return:
+    """
     directory = tempfile.mkdtemp()
     for f in files:
         # makes sure files do not overwrite each other, hence the prefix

@@ -200,7 +200,7 @@ def serve_application(
     ssl_context = server.create_ssl_context(
         ssl_certificate, ssl_keyfile, ssl_ca_file, ssl_password
     )
-    protocol = "https" if ssl_context else "http"
+    protocol = "https" if ssl_context else "http" #yd。判断协议的类型是https还是http
 
     logger.info(f"Starting Rasa server on {protocol}://{interface}:{port}")
 
@@ -229,7 +229,7 @@ def serve_application(
         backlog=int(os.environ.get(ENV_SANIC_BACKLOG, "100")),
         workers=number_of_workers,
     )
-    print("yd. 结束rasa对话")
+    print("yd. 结束rasa对话") #yd。当在对话命令行界面输入"/stop"时，会打印这句话
 
 
 # noinspection PyUnusedLocal

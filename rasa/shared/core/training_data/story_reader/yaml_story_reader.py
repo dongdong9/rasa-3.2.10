@@ -196,7 +196,7 @@ class YAMLStoryReader(StoryReader):
     @classmethod
     def is_test_stories_file(cls, file_path: Union[Text, Path]) -> bool:
         """Checks if a file is a test conversations file.
-
+        yd。功能：判断file_path的文件名是否以"test_"开头，且对应的是story文件
         Args:
             file_path: Path of the file which should be checked.
 

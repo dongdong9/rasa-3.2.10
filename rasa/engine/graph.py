@@ -461,7 +461,7 @@ class GraphNode:
         )
 
         try:
-            output = self._fn(self._component, **run_kwargs)
+            output = self._fn(self._component, **run_kwargs) #yd。训练各个component，比如'RegexFeaturizer'和'LexicalSyntacticFeaturizer'等等
         except InvalidConfigException:
             # Pass through somewhat expected exception to allow more fine granular
             # handling of exceptions.

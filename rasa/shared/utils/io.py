@@ -30,6 +30,7 @@ from rasa.shared.exceptions import (
     RasaException,
 )
 import rasa.shared.utils.validation
+from rasa.shared.utils.cli import print_success
 
 DEFAULT_ENCODING = "utf-8"
 YAML_VERSION = (1, 2)
@@ -124,6 +125,7 @@ def read_file(filename: Union[Text, Path], encoding: Text = DEFAULT_ENCODING) ->
 
     try:
         with open(filename, encoding=encoding) as f:
+            print_success(f"yd。rasa/shared/utils/io.py的read_file()方法，成功读取{filename}文件的内容")
             return f.read()
     except FileNotFoundError:
         raise FileNotFoundException(
@@ -566,8 +568,9 @@ def read_validated_yaml(filename: Union[Text, Path], schema: Text) -> Any:
         YamlValidationException: In case the model configuration doesn't match the
             expected schema.
     """
-    content = read_file(filename)
+    content = read_file(filename) #yd。读取filename对应的文件，将每行的字符串用换行符拼起来
 
+    #yd。TODO：不知道这个方法是干啥的
     rasa.shared.utils.validation.validate_yaml_schema(content, schema)
     return read_yaml(content)
 

@@ -52,7 +52,7 @@ def run(
 
     kwargs = rasa.shared.utils.common.minimal_kwargs(
         kwargs, rasa.core.run.serve_application
-    )
+    ) #yd。按照rasa.core.run.serve_application方法所需的参数量，对传入的kwargs进行缩减，返回缩减后的参数
     rasa.core.run.serve_application(
         model,
         channel=connector,
@@ -60,6 +60,7 @@ def run(
         endpoints=_endpoints,
         **kwargs,
     )
+    print("yd。rasa/api.py中的方法run()已经执行结束了") ##d。当在对话命令行界面输入"/stop"时，会打印这句话
 
 
 def train(

@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Text, TYPE_CHECKING, Union
 
 from rasa.cli import SubParsersAction
 import rasa.cli.arguments.train as train_arguments
-
+from rasa.utils.common import change_cur_work_dir
 import rasa.cli.utils
 import rasa.utils.common
 from rasa.core.train import do_compare_training
@@ -64,9 +64,12 @@ def add_subparser(
     train_arguments.set_train_core_arguments(train_core_parser)
     train_arguments.set_train_nlu_arguments(train_nlu_parser)
 
-
+#yd。执行命令"rasa train"调用本方法
 def run_training(args: argparse.Namespace, can_exit: bool = False) -> Optional[Text]:
-    """Trains a model.
+    """
+    yd。功能：训练rasa模型（包括NLU和Core），得到的模型保存在'models\yyyymmdd-xxxxxx-allegro-torus.tar.gz'
+
+    Trains a model.
 
     Args:
         args: Namespace arguments.
@@ -77,6 +80,9 @@ def run_training(args: argparse.Namespace, can_exit: bool = False) -> Optional[T
         Path to a trained model or `None` if training was not successful.
     """
     from rasa import train as train_all
+
+    #yd。下面是切换当前工作目录
+    change_cur_work_dir()
 
     domain = rasa.cli.utils.get_validated_path(
         args.domain, "domain", DEFAULT_DOMAIN_PATH, none_is_valid=True
@@ -120,7 +126,7 @@ def _model_for_finetuning(args: argparse.Namespace) -> Optional[Text]:
     else:
         return args.finetune
 
-
+#yd。执行命令"rasa train core"调用本方法
 def run_core_training(args: argparse.Namespace) -> Optional[Text]:
     """Trains a Rasa Core model only.
 
@@ -131,6 +137,9 @@ def run_core_training(args: argparse.Namespace) -> Optional[Text]:
         Path to a trained model or `None` if training was not successful.
     """
     from rasa.model_training import train_core
+
+    #yd。下面是切换当前工作目录
+    change_cur_work_dir()
 
     args.domain = rasa.cli.utils.get_validated_path(
         args.domain, "domain", DEFAULT_DOMAIN_PATH, none_is_valid=True
@@ -162,7 +171,7 @@ def run_core_training(args: argparse.Namespace) -> Optional[Text]:
         do_compare_training(args, story_file, additional_arguments)
         return None
 
-
+#yd。执行命令"rasa train nlu"调用本方法
 def run_nlu_training(args: argparse.Namespace) -> Optional[Text]:
     """Trains an NLU model.
 
@@ -173,6 +182,9 @@ def run_nlu_training(args: argparse.Namespace) -> Optional[Text]:
         Path to a trained model or `None` if training was not successful.
     """
     from rasa.model_training import train_nlu
+
+    #yd。下面是切换当前工作目录
+    change_cur_work_dir()
 
     config = _get_valid_config(args.config, CONFIG_MANDATORY_KEYS_NLU)
     nlu_data = rasa.cli.utils.get_validated_path(

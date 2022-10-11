@@ -33,7 +33,7 @@ from rasa.utils.common import configure_logging_and_warnings
 
 logger = logging.getLogger(__name__)
 
-
+#yd。创建命令参数解析器，为了可以执行rasa init、 rasa run、rasa shell等命令
 def create_argument_parser() -> argparse.ArgumentParser:
     """Parse all the command line arguments for the training script."""
 
@@ -51,7 +51,7 @@ def create_argument_parser() -> argparse.ArgumentParser:
         action="store_true",
         default=argparse.SUPPRESS,
         help="Print installed Rasa version",
-    )
+    ) #yd。创建一条子命令 rasa --version
 
     parent_parser = argparse.ArgumentParser(add_help=False)
     add_logging_options(parent_parser)
@@ -59,14 +59,15 @@ def create_argument_parser() -> argparse.ArgumentParser:
 
     subparsers = parser.add_subparsers(help="Rasa commands")
 
-    scaffold.add_subparser(subparsers, parents=parent_parsers)
-    run.add_subparser(subparsers, parents=parent_parsers)
-    shell.add_subparser(subparsers, parents=parent_parsers)
-    train.add_subparser(subparsers, parents=parent_parsers)
-    interactive.add_subparser(subparsers, parents=parent_parsers)
-    telemetry.add_subparser(subparsers, parents=parent_parsers)
-    test.add_subparser(subparsers, parents=parent_parsers)
-    visualize.add_subparser(subparsers, parents=parent_parsers)
+    #yd。为了子命令(如 rasa init、 rasa run、rasa shell等)而创建的子解析器
+    scaffold.add_subparser(subparsers, parents=parent_parsers) #调用rasa/cli/scaffold.py中的add_subparser()方法，对应命令"rasa init"
+    run.add_subparser(subparsers, parents=parent_parsers) #yd。调用rasa/cli/run.py中的add_subparser()方法，对应命令"rasa run"
+    shell.add_subparser(subparsers, parents=parent_parsers) #yd。调用rasa/cli/shell.py中的add_subparser()方法，对应命令"rasa shell"
+    train.add_subparser(subparsers, parents=parent_parsers)#yd。调用rasa/cli/train.py中的add_subparser()方法，对应命令"rasa train"
+    interactive.add_subparser(subparsers, parents=parent_parsers)#yd。调用rasa/cli/interactive.py中的add_subparser()方法，对应命令"rasa interactive"
+    telemetry.add_subparser(subparsers, parents=parent_parsers)#yd。调用rasa/cli/telemetry.py中的add_subparser()方法，对应命令"rasa telemetry"
+    test.add_subparser(subparsers, parents=parent_parsers) #yd。调用rasa/cli/test.py中的add_subparser()方法，对应命令"rasa test"
+    visualize.add_subparser(subparsers, parents=parent_parsers)#yd。调用rasa/cli/visualize.py中的add_subparser()方法，对应命令"rasa visualize"
     data.add_subparser(subparsers, parents=parent_parsers)
     export.add_subparser(subparsers, parents=parent_parsers)
     x.add_subparser(subparsers, parents=parent_parsers)
@@ -107,6 +108,8 @@ def main() -> None:
             rasa.utils.io.configure_colored_logging(log_level)
             rasa.telemetry.initialize_telemetry()
             rasa.telemetry.initialize_error_reporting()
+
+            print(f"yd。开始执行具体的rasa命令")
             cmdline_arguments.func(cmdline_arguments)
         elif hasattr(cmdline_arguments, "version"):
             print_version()

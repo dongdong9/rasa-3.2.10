@@ -411,7 +411,7 @@ class SkipEventInMDStoryMixin(Event, ABC):
         return
 
 
-class UserUttered(Event):
+class UserUttered(Event):#yd。用于记录用户说了什么
     """The user has said something to the bot.
 
     As a side effect a new `Turn` will be created in the `Tracker`.

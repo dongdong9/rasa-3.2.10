@@ -79,7 +79,7 @@ def add_subparser(
 
     marker_parser.set_defaults(func=_run_markers_cli)
 
-
+#yd。执行命令"rasa evaluate markers"调用本方法
 def _run_markers_cli(args: argparse.Namespace) -> None:
     """Run markers algorithm using parameters from CLI.
 

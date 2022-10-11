@@ -121,7 +121,9 @@ def guess_format(filename: Text) -> Text:
         return guess
 
     try:
+        print("\n-----为执行guess_format()方法，开始读取文件内容")
         content = rasa.shared.utils.io.read_file(filename)
+        print("-----为执行guess_format()方法，完成读取文件内容\n")
         js = json.loads(content)
     except ValueError:
         if RasaYAMLReader.is_yaml_nlu_file(filename):

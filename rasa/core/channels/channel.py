@@ -89,6 +89,7 @@ def register(
         await app.ctx.agent.handle_message(message)
 
     for channel in input_channels:
+        # yd。下面是根据route得到url_prefix
         if route:
             p = urljoin(route, channel.url_prefix())
         else:
@@ -216,6 +217,12 @@ class OutputChannel:
         return cls.__name__
 
     async def send_response(self, recipient_id: Text, message: Dict[Text, Any]) -> None:
+        """
+        yd。功能：发送机器人的回复
+        :param recipient_id:
+        :param message: 以dict的形式保存的机器人回复的内容
+        :return:
+        """
         """Send a message to the client."""
 
         if message.get("quick_replies"):
@@ -229,7 +236,7 @@ class OutputChannel:
             await self.send_text_with_buttons(
                 recipient_id, message.pop("text"), message.pop("buttons"), **message
             )
-        elif message.get("text"):
+        elif message.get("text"): #yd。TODO：不理解这里的意思
             await self.send_text_message(recipient_id, message.pop("text"), **message)
 
         if message.get("custom"):
@@ -348,7 +355,7 @@ class CollectingOutputChannel(OutputChannel):
         custom: Dict[Text, Any] = None,
     ) -> Dict:
         """Create a message object that will be stored."""
-
+        #yd。这里将机器人返回的消息进行重新组装，过滤掉值为None的字段
         obj = {
             "recipient_id": recipient_id,
             "text": text,

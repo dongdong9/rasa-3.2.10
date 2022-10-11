@@ -100,8 +100,9 @@ class TrainingDataImporter(ABC):
         training_data_paths: Optional[List[Text]] = None,
     ) -> "TrainingDataImporter":
         """Loads a `TrainingDataImporter` instance from a configuration file."""
-        # yd。读取config_path对应对配置文件，过滤被注释的内容，以dict的形式返回有效的字段内容。例如config = {'recipe': 'default.v1', 'language': 'en', 'pipeline': None, 'policies': None}
+        # yd。读取config_path对应对配置文件（例如config.yml），过滤被注释的内容，以dict的形式返回有效的字段内容。例如config = {'recipe': 'default.v1', 'language': 'en', 'pipeline': None, 'policies': None}
         config = rasa.shared.utils.io.read_config_file(config_path)
+
         return TrainingDataImporter.load_from_dict(
             config, config_path, domain_path, training_data_paths
         )
@@ -292,6 +293,7 @@ class CombinedDataImporter(TrainingDataImporter):
     @rasa.shared.utils.common.cached_method
     def get_conversation_tests(self) -> StoryGraph:
         """Retrieves conversation test stories (see parent class for full docstring)."""
+        #yd。功能：读取self._conversation_test_files对应的yml文件（默认为'.\\tests\\test_stories.yml'）
         stories = [importer.get_conversation_tests() for importer in self._importers]
 
         return reduce(

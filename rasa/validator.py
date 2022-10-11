@@ -51,10 +51,21 @@ class Validator:
     @classmethod
     def from_importer(cls, importer: TrainingDataImporter) -> "Validator":
         """Create an instance from the domain, nlu and story files."""
+        print("\nyd。准备执行importer.get_domain()")
         domain = importer.get_domain()
+        print("yd。完成执行importer.get_domain()\n")
+
+        print("\nyd。准备执行importer.get_stories()")
         story_graph = importer.get_stories()
+        print("yd。完成执行importer.get_stories()\n")
+
+        print("\nyd。准备执行importer.get_nlu_data()")
         intents = importer.get_nlu_data()
+        print("yd。完成执行importer.get_nlu_data()\n")
+
+        print("\nyd。准备执行importer.get_config()")
         config = importer.get_config()
+        print("yd。完成执行importer.get_config()\n")
 
         return cls(domain, intents, story_graph, config)
 

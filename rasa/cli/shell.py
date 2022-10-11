@@ -90,8 +90,13 @@ def shell_nlu(args: argparse.Namespace) -> None:
     telemetry.track_shell_started("nlu")
     rasa.nlu.run.run_cmdline(model)
 
-
+#yd。执行命令"rasa shell"后调用本方法，"rasa shell"等同于命令"rasa run"
 def shell(args: argparse.Namespace) -> None:
+    """
+    yd。功能：运行一个rasa模型，启动一个基于命令行界面的对话系统。
+    :param args:
+    :return:
+    """
     """Talk with a bot though the command line."""
     from rasa.cli.utils import get_validated_path
     from rasa.shared.constants import DEFAULT_MODELS_PATH
@@ -101,7 +106,7 @@ def shell(args: argparse.Namespace) -> None:
     model = get_validated_path(args.model, "model", DEFAULT_MODELS_PATH) #yd。获取训练好的模型的路径
 
     try:
-        model = get_local_model(model)
+        model = get_local_model(model) #yd。判断当前model对应的路径是否有效，如果无效，则会触发下一行的except
     except ModelNotFound:
         print_error(
             "No model found. Train a model before running the "
@@ -122,4 +127,4 @@ def shell(args: argparse.Namespace) -> None:
 
         telemetry.track_shell_started("rasa")
 
-        rasa.cli.run.run(args)
+        rasa.cli.run.run(args)#yd。调用rasa/cli/run.py的run()方法，启动一个rasa模型

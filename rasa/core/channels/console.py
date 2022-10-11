@@ -115,6 +115,11 @@ async def _get_user_input(previous_response: Dict[str, Any]) -> Optional[Text]:
 async def _get_user_input(
     previous_response: Optional[Dict[str, Any]]
 ) -> Optional[Text]:
+    """
+    yd。功能：获取用户的输入
+    :param previous_response:
+    :return:
+    """
     button_response = None
     if previous_response is not None:
         button_response = _print_bot_output(previous_response, is_latest_message=True)
@@ -158,7 +163,7 @@ async def _send_message_receive_stream(
     url = f"{server_url}/webhooks/rest/webhook?stream=true&token={auth_token}"
 
     # Define timeout to not keep reading in case the server crashed in between
-    timeout = _get_stream_reading_timeout(request_timeout)
+    timeout = _get_stream_reading_timeout(request_timeout) #yd。获取超时限制
 
     async with aiohttp.ClientSession(timeout=timeout) as session:
         async with session.post(url, json=payload, raise_for_status=True) as resp:
@@ -213,7 +218,7 @@ async def record_messages(
         if use_response_stream:
             bot_responses_stream = _send_message_receive_stream(
                 server_url, auth_token, sender_id, text, request_timeout=request_timeout
-            )
+            ) #yd。在这个方法中获取机器人的回答，即bot_responses_stream
             previous_response = None
             async for response in bot_responses_stream:
                 if previous_response is not None:

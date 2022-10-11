@@ -125,6 +125,7 @@ def validate_yaml_schema(yaml_file_content: Text, schema_path: Text) -> None:
         yaml_file_content: the content of the yaml file to be validated
         schema_path: the schema of the yaml file
     """
+    print(f"\n-----准备执行rasa/shared/utils/validation.py中的validate_yaml_schema()方法")
     from pykwalify.core import Core
     from pykwalify.errors import SchemaError
     from ruamel.yaml import YAMLError
@@ -177,6 +178,7 @@ def validate_yaml_schema(yaml_file_content: Text, schema_path: Text) -> None:
             content=source_data,
         )
 
+    print(f"-----完成执行rasa/shared/utils/validation.py中的validate_yaml_schema()方法\n")
 
 def validate_training_data(json_data: Dict[Text, Any], schema: Dict[Text, Any]) -> None:
     """Validate rasa training data format to ensure proper training.

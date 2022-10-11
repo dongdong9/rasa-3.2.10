@@ -43,8 +43,13 @@ def add_subparser(
     telemetry_enable_parser.set_defaults(func=enable_telemetry)
     telemetry_parser.set_defaults(func=inform_about_telemetry)
 
-
+#yd。执行命令"rasa telemetry"调用本方法
 def inform_about_telemetry(_: argparse.Namespace) -> None:
+    """
+    yd。功能：通知用户telemetry tracking report是否被禁用。备注：rasa程序使用 telemetry来报告匿名使用信息给官方，用于帮助优化rasa源码。
+    :param _:
+    :return:
+    """
     """Inform user about telemetry tracking."""
     is_enabled = telemetry.is_telemetry_enabled()
     if is_enabled:

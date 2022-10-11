@@ -2,7 +2,7 @@ import argparse
 import os
 import sys
 from typing import List, Text
-
+from rasa.constants import RASA_DEMO_FILES_DIR
 from rasa import telemetry
 from rasa.cli import SubParsersAction
 from rasa.cli.shell import shell
@@ -66,7 +66,7 @@ def print_train_or_instructions(args: argparse.Namespace) -> None:
             DEFAULT_CONFIG_PATH,
             DEFAULT_DATA_PATH,
             DEFAULT_MODELS_PATH,
-        ) #yd。完成模型的训练
+        ) #yd。完成模型的训练，将模型保存在'models\yyyymmdd-200313-plastic-application.tar.gz'中
         args.model = training_result.model
 
         print_run_or_instructions(args) #yd。这里是输入句子，获取机器人的回答的入口函数
@@ -107,7 +107,7 @@ def print_run_or_instructions(args: argparse.Namespace) -> None:
 
         args.port = constants.DEFAULT_SERVER_PORT
 
-        shell(args)
+        shell(args)#yd。调用rasa/cli/shell.py的shell()方法
     else:
         if args.no_prompt:
             print(
@@ -125,6 +125,12 @@ def print_run_or_instructions(args: argparse.Namespace) -> None:
 
 
 def init_project(args: argparse.Namespace, path: Text) -> None:
+    """
+
+    :param args:
+    :param path:新创建的文件夹名称，例如"rasa_demo_files_dir"
+    :return:
+    """
     """Inits project."""
     os.chdir(path) #yd。修改当前的工作目录至path所对应的路径，执行了这句后，在执行os.getcwd()，返回的路径即为path对应的值
     print_success(f"当前工作目录已经被切换，新的os.getcwd() = {os.getcwd()}") #yd。提示当前工作目录
@@ -232,7 +238,7 @@ def run(args: argparse.Namespace) -> None:
             if path == "": #yd。如果没有指定project path，则默认使用当前
                 path = "."
         else:
-            for_debug_path = "rasa_demo_yd"
+            for_debug_path = RASA_DEMO_FILES_DIR
             path = (
                 questionary.text(
                     "Please enter a path where the project will be "
@@ -264,3 +270,4 @@ def run(args: argparse.Namespace) -> None:
     telemetry.track_project_init(path)
 
     init_project(args, path)
+    print("yd。完成执行run()")

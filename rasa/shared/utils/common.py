@@ -160,6 +160,13 @@ def transform_collection_to_sentence(collection: Collection[Text]) -> Text:
 def minimal_kwargs(
     kwargs: Dict[Text, Any], func: Callable, excluded_keys: Optional[List] = None
 ) -> Dict[Text, Any]:
+    """
+    yd。功能：从传入的kwargs中返回function需要的参数，即最小化kwargs
+    :param kwargs: 传入的所有参数
+    :param func:
+    :param excluded_keys:
+    :return:
+    """
     """Returns only the kwargs which are required by a function. Keys, contained in
     the exception list, are not included.
 

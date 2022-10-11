@@ -73,9 +73,11 @@ def _validate_model_path(model_path: Text, parameter: Text, default: Text) -> Te
 
     return model_path
 
-
+#yd。执行命令"rasa run"后调用本方法
 def run(args: argparse.Namespace) -> None:
-    """Entrypoint for `rasa run`.
+    """
+    yd。功能：运行一个rasa模型，启动一个基于命令行界面的对话系统。
+    Entrypoint for `rasa run`.
 
     Args:
         args: The CLI arguments.
@@ -92,7 +94,7 @@ def run(args: argparse.Namespace) -> None:
     if args.enable_api:
         if not args.remote_storage:
             args.model = _validate_model_path(args.model, "model", DEFAULT_MODELS_PATH)
-        rasa.run(**vars(args))
+        rasa.run(**vars(args))#yd。调用rasa/api.py中的run()方法，启动一个rasa模型
         return
 
     # if the API is not enable you cannot start without a model
@@ -104,14 +106,14 @@ def run(args: argparse.Namespace) -> None:
 
     # start server if remote storage is configured
     if args.remote_storage is not None:
-        rasa.run(**vars(args))
+        rasa.run(**vars(args))#yd。调用rasa/api.py中的run()方法，启动一个rasa模型
         return
 
     # start server if model server is configured
     endpoints = AvailableEndpoints.read_endpoints(args.endpoints)
     model_server = endpoints.model if endpoints and endpoints.model else None
     if model_server is not None:
-        rasa.run(**vars(args))
+        rasa.run(**vars(args))#yd。调用rasa/api.py中的run()方法，启动一个rasa模型
         return
 
     # start server if local model found
@@ -122,8 +124,8 @@ def run(args: argparse.Namespace) -> None:
     except ModelNotFound:
         local_model_set = False
 
-    if local_model_set:
-        rasa.run(**vars(args))
+    if local_model_set: #yd。如果本地存在模型，则启动rasa模型
+        rasa.run(**vars(args))#yd。调用rasa/api.py中的run()方法，启动一个rasa模型
         return
 
     rasa.shared.utils.cli.print_error(

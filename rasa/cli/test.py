@@ -27,7 +27,7 @@ import rasa.shared.utils.validation as validation_utils
 import rasa.cli.utils
 import rasa.utils.common
 from rasa.shared.importers.importer import TrainingDataImporter
-
+from rasa.utils.common import change_cur_work_dir
 logger = logging.getLogger(__name__)
 
 
@@ -99,6 +99,9 @@ async def run_core_test_async(args: argparse.Namespace) -> None:
         test_core,
         test_core_models,
     )
+
+    #yd。下面是切换当前工作目录
+    change_cur_work_dir()
 
     stories = rasa.cli.utils.get_validated_path(
         args.stories, "stories", DEFAULT_DATA_PATH
@@ -182,13 +185,16 @@ async def run_nlu_test_async(
         test_nlu,
     )
 
+    #yd。下面是切换当前工作目录
+    change_cur_work_dir()
+
     data_path = str(
         rasa.cli.utils.get_validated_path(data_path, "nlu", DEFAULT_DATA_PATH)
     )
     test_data_importer = TrainingDataImporter.load_from_dict(
         training_data_paths=[data_path], domain_path=domain_path
     )
-    nlu_data = test_data_importer.get_nlu_data()
+    nlu_data = test_data_importer.get_nlu_data() #yd。读取data/nlu.yml中的数据
 
     output = output_dir or DEFAULT_RESULTS_PATH
     all_args["errors"] = not no_errors
@@ -241,7 +247,7 @@ async def run_nlu_test_async(
 
         await test_nlu(model_path, data_path, output, all_args, domain_path=domain_path)
 
-
+#yd。执行命令"rasa test nlu --model models"调用本方法
 def run_nlu_test(args: argparse.Namespace) -> None:
     """Runs NLU tests.
 
@@ -263,7 +269,7 @@ def run_nlu_test(args: argparse.Namespace) -> None:
         )
     )
 
-
+#yd。执行命令"rasa test core --model models"调用本方法
 def run_core_test(args: argparse.Namespace) -> None:
     """Runs Core tests.
 
@@ -272,7 +278,7 @@ def run_core_test(args: argparse.Namespace) -> None:
     """
     asyncio.run(run_core_test_async(args))
 
-
+#yd。执行命令"rasa test"调用本方法
 def test(args: argparse.Namespace) -> None:
     """Run end-to-end tests."""
     setattr(args, "e2e", True)
