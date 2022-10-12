@@ -55,3 +55,5 @@ rasa/rasa_demo_Chapter02/.rasa/
 rasa/rasa_demo_Chapter02/models/
 rasa/rasa_demo_Chapter02/log
 rasa/rasa_demo_Chapter02/.gitignore
+
+rasa/nlu/utils/hugging_face/__pycache__/
