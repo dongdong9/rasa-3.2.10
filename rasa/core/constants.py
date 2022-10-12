@@ -20,7 +20,8 @@ DEFAULT_RESPONSE_TIMEOUT = 60 * 60  # 1 hour
 
 DEFAULT_REQUEST_TIMEOUT = 60 * 5  # 5 minutes
 
-DEFAULT_STREAM_READING_TIMEOUT = 10  # in seconds
+#DEFAULT_STREAM_READING_TIMEOUT = 10  # in seconds
+DEFAULT_STREAM_READING_TIMEOUT = 10000  # in seconds #yd。为了便于调试代码，而将Timeout的阈值调大
 
 DEFAULT_LOCK_LIFETIME = 60  # in seconds
 

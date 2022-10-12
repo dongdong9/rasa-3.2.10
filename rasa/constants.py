@@ -38,6 +38,7 @@ ENV_GPU_CONFIG = "TF_GPU_MEMORY_ALLOC"
 ENV_CPU_INTER_OP_CONFIG = "TF_INTER_OP_PARALLELISM_THREADS"
 ENV_CPU_INTRA_OP_CONFIG = "TF_INTRA_OP_PARALLELISM_THREADS"
 
-RASA_DEMO_FILES_DIR = "rasa_demo_files_dir"
+#RASA_DEMO_FILES_DIR = "rasa_demo_files_dir" #yd。为了调试官方的源码而设置的文件夹
+RASA_DEMO_FILES_DIR = "rasa_demo_Chapter02" #yd。这是为了调试《Rasa实战:构建开源对话机器人》 2.7 实战：医疗机器人的NLU模块 中的例子
 RASA_PATH = os.path.abspath(r".")
 RASA_DEMO_FILES_DIR_PATH = os.path.join(RASA_PATH, RASA_DEMO_FILES_DIR)

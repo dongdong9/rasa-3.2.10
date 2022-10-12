@@ -15,7 +15,7 @@ from rasa.shared.constants import (
     DEFAULT_MODELS_PATH,
 )
 from rasa.exceptions import ModelNotFound
-
+from rasa.utils.common import change_cur_work_dir
 logger = logging.getLogger(__name__)
 
 
@@ -83,6 +83,9 @@ def run(args: argparse.Namespace) -> None:
         args: The CLI arguments.
     """
     import rasa
+
+    #yd。下面是切换当前工作目录
+    change_cur_work_dir()
 
     args.endpoints = rasa.cli.utils.get_validated_path(
         args.endpoints, "endpoints", DEFAULT_ENDPOINTS_PATH, True

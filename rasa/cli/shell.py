@@ -12,6 +12,7 @@ from rasa.model import get_local_model
 from rasa.shared.data import TrainingType
 from rasa.shared.utils.cli import print_error
 from rasa.exceptions import ModelNotFound
+from rasa.utils.common import change_cur_work_dir
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +101,9 @@ def shell(args: argparse.Namespace) -> None:
     """Talk with a bot though the command line."""
     from rasa.cli.utils import get_validated_path
     from rasa.shared.constants import DEFAULT_MODELS_PATH
+
+    #yd。下面是切换当前工作目录
+    change_cur_work_dir()
 
     args.connector = "cmdline"
 

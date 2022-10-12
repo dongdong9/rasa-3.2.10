@@ -379,6 +379,7 @@ class GraphNode:
             self._load_component()
 
     def _load_component(self, **kwargs: Any) -> None:
+        print("**** yd。开始执行_load_component(self, **kwargs: Any)方法\n")
         logger.debug(
             f"Node '{self._node_name}' loading "
             f"'{self._component_class.__name__}.{self._constructor_name}' "
@@ -408,6 +409,7 @@ class GraphNode:
                     f"Error initializing graph component for node {self._node_name}."
                 )
                 raise
+        print("**** yd。完成执行_load_component(self, **kwargs: Any)方法\n")
 
     def _get_resource(self, kwargs: Dict[Text, Any]) -> Resource:
         if "resource" in kwargs:

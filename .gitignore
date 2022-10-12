@@ -47,5 +47,11 @@ rasa/shared/utils/__pycache__/
 rasa/shared/utils/schemas/__pycache__/
 rasa/utils/__pycache__/
 rasa/utils/tensorflow/__pycache__/
+
 rasa/rasa_demo_files_dir/.rasa/
 rasa/rasa_demo_files_dir/models/
+
+rasa/rasa_demo_Chapter02/.rasa/
+rasa/rasa_demo_Chapter02/models/
+rasa/rasa_demo_Chapter02/log
+rasa/rasa_demo_Chapter02/.gitignore
