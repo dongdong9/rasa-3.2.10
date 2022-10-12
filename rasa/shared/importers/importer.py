@@ -99,6 +99,13 @@ class TrainingDataImporter(ABC):
         domain_path: Optional[Text] = None,
         training_data_paths: Optional[List[Text]] = None,
     ) -> "TrainingDataImporter":
+        """
+        yd。功能：创建一个E2EImporter对象，该对象的成员变量保存了nlu文件所在的路径，story文件所在的路径和测试会话文件所在的路径
+        :param config_path:
+        :param domain_path:
+        :param training_data_paths:
+        :return:
+        """
         """Loads a `TrainingDataImporter` instance from a configuration file."""
         # yd。读取config_path对应对配置文件（例如config.yml），过滤被注释的内容，以dict的形式返回有效的字段内容。例如config = {'recipe': 'default.v1', 'language': 'en', 'pipeline': None, 'policies': None}
         config = rasa.shared.utils.io.read_config_file(config_path)
@@ -124,22 +131,29 @@ class TrainingDataImporter(ABC):
 
     @staticmethod
     def load_nlu_importer_from_config(
-        config_path: Text,
+        config_path: Text, #yd。config文件的路径，比如"config.yml"
         domain_path: Optional[Text] = None,
-        training_data_paths: Optional[List[Text]] = None,
+        training_data_paths: Optional[List[Text]] = None, #yd。nlu data 所在的文件夹路径
     ) -> "TrainingDataImporter":
+        """
+        #yd。功能：创建一个NluDataImporter对象，该对象的成员变量保存了nlu文件所在的路径（例如".\\data\\nlu.yml"），story文件所在的路径和测试会话文件所在的路径
+        :param config_path:
+        :param domain_path:
+        :param training_data_paths:
+        :return:
+        """
         """Loads nlu `TrainingDataImporter` instance.
 
         Instance loaded from configuration file will only read NLU training data.
         """
         importer = TrainingDataImporter.load_from_config(
             config_path, domain_path, training_data_paths
-        )
+        )#yd。功能：创建一个E2EImporter对象，该对象的成员变量保存了nlu文件所在的路径，story文件所在的路径和测试会话文件所在的路径
 
         if isinstance(importer, E2EImporter):
             # When we only train NLU then there is no need to enrich the data with
             # E2E data from Core training data.
-            importer = importer.importer
+            importer = importer.importer #yd。返回的importer为ResponsesSyncImporter对象
 
         return NluDataImporter(importer)
 
@@ -151,11 +165,11 @@ class TrainingDataImporter(ABC):
         training_data_paths: Optional[List[Text]] = None,
     ) -> "TrainingDataImporter":
         """
-        yd。功能：
+        yd。功能：创建一个E2EImporter对象，该对象的成员变量保存了nlu文件所在的路径，story文件所在的路径和测试会话文件所在的路径
         :param config: 以dict的形式保存config.yml中每个字段的内容，例如config = {'recipe': 'default.v1', 'language': 'en', 'pipeline': None, 'policies': None}
-        :param config_path:
+        :param config_path: config文件的路径，例如"config.yml"
         :param domain_path:
-        :param training_data_paths:
+        :param training_data_paths: 训练数据所在的文件夹，例如"data"
         :return:
         """
         """Loads a `TrainingDataImporter` instance from a dictionary."""
@@ -170,12 +184,15 @@ class TrainingDataImporter(ABC):
             for importer in importers
         ]
         importers = [importer for importer in importers if importer]
-        if not importers:
+        if not importers: #yd。如果importers为空
             importers = [
+                # yd。根据config_path和training_data_paths，创建一个importer对象，该对象中包括nlu文件的路径（例如".\\data\\nlu.yml"）
+                # story文件的路径（例如".\\data\\rules.yml"、".\\data\\stories.yml"和'.\\tests\\test_stories.yml'）
+                # 测试会话的文件路径（例如'.\\tests\\test_stories.yml'）
                 RasaFileImporter(config_path, domain_path, training_data_paths)
             ]
 
-        return E2EImporter(ResponsesSyncImporter(CombinedDataImporter(importers)))
+        return E2EImporter(ResponsesSyncImporter(CombinedDataImporter(importers))) #yd。一层层继承，得到E2EImporter对象
 
     @staticmethod
     def _importer_from_dict(
@@ -238,15 +255,29 @@ class NluDataImporter(TrainingDataImporter):
         return StoryGraph([])
 
     def get_config(self) -> Dict:
+        """
+        yd。功能：获取self._importers中每个importer.config_file（默认值为“config.yml”）的内容，以key-value对的形式保存在dict中。然后将这些dict合并后返回
+        :return:
+        """
         """Retrieves model config (see parent class for full docstring)."""
         return self._importer.get_config()
 
     def get_nlu_data(self, language: Optional[Text] = "en") -> TrainingData:
+        """
+        yd。功能：读取所有关于nlu data对应的文件（包括路径self._nlu_files，默认为['data\\nlu.yml']；包括路径self._domain_path，默认值为None），
+                并将读取的内容合并到一起后返回
+        :param language:
+        :return:
+        """
         """Retrieves NLU training data (see parent class for full docstring)."""
         return self._importer.get_nlu_data(language)
 
     @rasa.shared.utils.common.cached_method
     def get_config_file_for_auto_config(self) -> Optional[Text]:
+        """
+        yd。功能：返回config文件的路径，默认为"config.yml"
+        :return:
+        """
         """Returns config file path for auto-config only if there is a single one."""
         return self._importer.get_config_file_for_auto_config()
 
@@ -263,6 +294,10 @@ class CombinedDataImporter(TrainingDataImporter):
 
     @rasa.shared.utils.common.cached_method
     def get_config(self) -> Dict:
+        """
+        yd。功能：获取self._importers中每个importer.config_file（默认值为“config.yml”）的内容，以key-value对的形式保存在dict中。然后将这些dict合并后返回
+        :return:
+        """
         """Retrieves model config (see parent class for full docstring)."""
         configs = [importer.get_config() for importer in self._importers]
 
@@ -270,6 +305,10 @@ class CombinedDataImporter(TrainingDataImporter):
 
     @rasa.shared.utils.common.cached_method
     def get_domain(self) -> Domain:
+        """
+        yd。功能：将self._importers中每个importer的importer._domain_path（默认为？）的内容读取出来并合并，返回合并后的结果
+        :return:
+        """
         """Retrieves model domain (see parent class for full docstring)."""
         domains = [importer.get_domain() for importer in self._importers]
 
@@ -302,7 +341,14 @@ class CombinedDataImporter(TrainingDataImporter):
 
     @rasa.shared.utils.common.cached_method
     def get_nlu_data(self, language: Optional[Text] = "en") -> TrainingData:
+        """
+        yd。功能：读取self._importers中每个importer的importer._nlu_files（默认为".\\data\\nlu.yml"）所对应的内容，并将这些内容合并到一起
+        :param language:
+        :return:
+        """
         """Retrieves NLU training data (see parent class for full docstring)."""
+
+        #yd。读取importer._nlu_files（默认为".\\data\\nlu.yml"）所对应的内容
         nlu_data = [importer.get_nlu_data(language) for importer in self._importers]
 
         return reduce(
@@ -311,6 +357,10 @@ class CombinedDataImporter(TrainingDataImporter):
 
     @rasa.shared.utils.common.cached_method
     def get_config_file_for_auto_config(self) -> Optional[Text]:
+        """
+        yd。功能：返回config文件的路径，默认为"config.yml"
+        :return:
+        """
         """Returns config file path for auto-config only if there is a single one."""
         if len(self._importers) != 1:
             rasa.shared.utils.io.raise_warning(
@@ -434,8 +484,18 @@ class ResponsesSyncImporter(TrainingDataImporter):
 
     @rasa.shared.utils.common.cached_method
     def get_nlu_data(self, language: Optional[Text] = "en") -> TrainingData:
+        """
+        yd。功能：读取所有关于nlu data对应的文件（包括路径self._nlu_files，默认为['data\\nlu.yml']；包括路径self._domain_path，默认值为None），
+                并将读取的内容合并到一起后然后
+        :param language:
+        :return:
+        """
         """Updates NLU data with responses for retrieval intents from domain."""
+
+        # yd。读取self._importer的成员self._importers中每个importer的importer._nlu_files（默认为['data\\nlu.yml']）的内容，并将内容合并到一起后返回
         existing_nlu_data = self._importer.get_nlu_data(language)
+
+        #yd。读取self._importer的成员self._importers中每个importer的importer._nlu_files（默认值为？？）的内容，并合并
         existing_domain = self._importer.get_domain()
 
         return existing_nlu_data.merge(

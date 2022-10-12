@@ -186,10 +186,10 @@ def run_nlu_training(args: argparse.Namespace) -> Optional[Text]:
     #yd。下面是切换当前工作目录
     change_cur_work_dir()
 
-    config = _get_valid_config(args.config, CONFIG_MANDATORY_KEYS_NLU)
+    config = _get_valid_config(args.config, CONFIG_MANDATORY_KEYS_NLU) #yd。获取有效的config文件路径，例如config.yml
     nlu_data = rasa.cli.utils.get_validated_path(
         args.nlu, "nlu", DEFAULT_DATA_PATH, none_is_valid=True
-    )
+    ) #yd。判断配置的args.nlu或者默认值"nlu"是否为有效的nlu data 路径
 
     if args.domain:
         args.domain = rasa.cli.utils.get_validated_path(
@@ -234,7 +234,9 @@ def _get_valid_config(
     mandatory_keys: List[Text],
     default_config: Text = DEFAULT_CONFIG_PATH,
 ) -> Text:
-    """Get a config from a config file and check if it is valid.
+    """
+    yd。功能：获取一个有效的config文件路径
+    Get a config from a config file and check if it is valid.
 
     Exit if the config isn't valid.
 

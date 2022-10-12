@@ -73,7 +73,7 @@ def get_nlu_directory(paths: Optional[Union[Text, List[Text]]]) -> Text:
 def get_data_files(
     paths: Optional[Union[Text, List[Text]]], filter_predicate: Callable[[Text], bool]
 ) -> List[Text]:
-    """yd。功能：即从paths中找到符合条件的路径
+    """yd。功能：即从paths所对应的文件夹下，找到符合filter_predicate过滤条件的路径并返回
     Recursively collects all training files from a list of paths.
     Args:
         paths: List of paths to training files or folders containing them.
@@ -97,7 +97,7 @@ def get_data_files(
             if filter_predicate(path):
                 data_files.add(os.path.abspath(path))
         else:
-            new_data_files = _find_data_files_in_directory(path, filter_predicate)
+            new_data_files = _find_data_files_in_directory(path, filter_predicate) #yd。从path所对应的文件夹下，返回符合filter_predicate过滤条件的文件列表
             data_files.update(new_data_files)
 
     return sorted(data_files)
@@ -106,6 +106,12 @@ def get_data_files(
 def _find_data_files_in_directory(
     directory: Text, filter_property: Callable[[Text], bool]
 ) -> Set[Text]:
+    """
+    yd。功能：遍历directory文件夹下的所有文件名称，获取符合filter_property的文件路径并返回。
+    :param directory: 目标文件夹
+    :param filter_property: 文件名称过滤条件
+    :return: 返回符合条件的文件路径
+    """
     filtered_files = set()
 
     for root, _, files in os.walk(directory, followlinks=True):

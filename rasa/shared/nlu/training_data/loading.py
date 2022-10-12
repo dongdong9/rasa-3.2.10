@@ -42,6 +42,12 @@ _json_format_heuristics: Dict[Text, Callable[[Any, Text], bool]] = {
 
 
 def load_data(resource_name: Text, language: Optional[Text] = "en") -> "TrainingData":
+    """
+    yd。功能：读取resource_name所对应的文件
+    :param resource_name:
+    :param language:
+    :return:
+    """
     """Load training data from disk.
 
     Merges them if loaded from disk and multiple files are found."""
@@ -53,7 +59,7 @@ def load_data(resource_name: Text, language: Optional[Text] = "en") -> "Training
     else:
         files = rasa.shared.utils.io.list_files(resource_name)
 
-    data_sets = [_load(f, language) for f in files]
+    data_sets = [_load(f, language) for f in files] #yd。读取files所对应的文件，将读取的结果保存在data_sets中
     training_data_sets: List[TrainingData] = [ds for ds in data_sets if ds]
     if len(training_data_sets) == 0:
         training_data = TrainingData()
@@ -92,11 +98,11 @@ def _reader_factory(fformat: Text) -> Optional["TrainingDataReader"]:
 def _load(filename: Text, language: Optional[Text] = "en") -> Optional["TrainingData"]:
     """Loads a single training data file from disk."""
 
-    fformat = guess_format(filename)
+    fformat = guess_format(filename) #yd。获取file_name对应文件的类型，是UNK还是RASA_YAML
     if fformat == UNK:
         raise ValueError(f"Unknown data format for file '{filename}'.")
 
-    reader = _reader_factory(fformat)
+    reader = _reader_factory(fformat) #yd。根据文件类型返回对应的reader
 
     if reader:
         return reader.read(filename, language=language, fformat=fformat)
@@ -105,6 +111,11 @@ def _load(filename: Text, language: Optional[Text] = "en") -> Optional["Training
 
 
 def guess_format(filename: Text) -> Text:
+    """
+    yd。功能：判断file_name的文件类型是UNK，还是RASA_YAML
+    :param filename:
+    :return:
+    """
     """Applies heuristics to guess the data format of a file.
 
     Args:
@@ -117,7 +128,7 @@ def guess_format(filename: Text) -> Text:
 
     guess = UNK
 
-    if not os.path.isfile(filename):
+    if not os.path.isfile(filename): #yd。如果file_name所对应的不是一个文件，则返回UNK，即未知类型
         return guess
 
     try:
@@ -126,7 +137,7 @@ def guess_format(filename: Text) -> Text:
         print("-----为执行guess_format()方法，完成读取文件内容\n")
         js = json.loads(content)
     except ValueError:
-        if RasaYAMLReader.is_yaml_nlu_file(filename):
+        if RasaYAMLReader.is_yaml_nlu_file(filename): #yd。如果file_name对应的文件中，含有关键字KEY_NLU 或 KEY_RESPONSES，则说明其类型为RASA_YAML
             guess = RASA_YAML
     else:
         for file_format, format_heuristic in _json_format_heuristics.items():

@@ -6,6 +6,12 @@ from rasa.shared.nlu.training_data.training_data import TrainingData
 
 
 def training_data_from_paths(paths: Iterable[Text], language: Text) -> TrainingData:
+    """
+    yd。功能：读取paths所对应的文件，将读取的结果保存在training_data_sets中，并将training_data_sets合并到一起
+    :param paths:
+    :param language:
+    :return:
+    """
     from rasa.shared.nlu.training_data import loading
 
     training_data_sets = [loading.load_data(nlu_file, language) for nlu_file in paths]

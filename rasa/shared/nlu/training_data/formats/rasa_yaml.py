@@ -337,6 +337,11 @@ class RasaYAMLReader(TrainingDataReader):
 
     @staticmethod
     def is_yaml_nlu_file(filename: Union[Text, Path]) -> bool:
+        """
+        yd。功能：判断file_name对应的文件中，是否含有关键字KEY_NLU 或 KEY_RESPONSES，若含有，则说明是nlu yaml文件
+        :param filename:
+        :return:
+        """
         """Checks if the specified file possibly contains NLU training data in YAML.
 
         Args:
@@ -353,7 +358,7 @@ class RasaYAMLReader(TrainingDataReader):
         if not rasa.shared.data.is_likely_yaml_file(filename):
             return False
 
-        return rasa.shared.utils.io.is_key_in_yaml(filename, KEY_NLU, KEY_RESPONSES)
+        return rasa.shared.utils.io.is_key_in_yaml(filename, KEY_NLU, KEY_RESPONSES) #yd。判断file_name对应的文件中，是否含有传入的指定关键字
 
 
 class RasaYAMLWriter(TrainingDataWriter):

@@ -199,13 +199,16 @@ def _train_graph(
 
     is_finetuning = model_to_finetune is not None
 
-    config = file_importer.get_config() #yd。以dict的形式返回config.yml中每个字段的内容，例如config = {'recipe': 'default.v1', 'language': 'en', 'pipeline': None, 'policies': None}
+    #yd。功能：获取file_importer._importer._importer的成员变量self._importers中每个importer.config_file（默认值为“config.yml”）的内容，以key - value对的形式保存在dict中。然后将这些dict合并后返回
+    #        例如config = {'recipe': 'default.v1', 'language': 'en', 'pipeline': None, 'policies': None}
+    config = file_importer.get_config()
     recipe = Recipe.recipe_for_name(config.get("recipe"))
     config, _missing_keys, _configured_keys = recipe.auto_configure(
         file_importer.get_config_file_for_auto_config(),
         config,
         training_type,
-    )
+    )#yd。根据training_type所对应的全部字段，获取config中缺失的字段，保存在missing_keys中；获取config中需要配置的字段，保存在keys_to_configure中
+
     model_configuration = recipe.graph_config_for_recipe(
         config,
         kwargs,
@@ -349,7 +352,7 @@ def train_core(
 
 def train_nlu(
     config: Text,
-    nlu_data: Optional[Text],
+    nlu_data: Optional[Text], #yd。nlu_data是保存nlu data的文件夹
     output: Text,
     fixed_model_name: Optional[Text] = None,
     persist_nlu_training_data: bool = False,
@@ -388,9 +391,12 @@ def train_nlu(
     # training NLU only hence the training files still have to be selected
     file_importer = TrainingDataImporter.load_nlu_importer_from_config(
         config, domain, training_data_paths=[nlu_data]
-    )
+    )#yd。功能：创建一个NluDataImporter对象，该对象的成员变量保存了nlu文件所在的路径（例如".\\data\\nlu.yml"），story文件所在的路径和测试会话文件所在的路径
 
+    #yd。功能：读取所有关于nlu data对应的文件（包括路径self._nlu_files，默认为['data\\nlu.yml']；包括路径self._domain_path，默认值为None），
+    #         并将读取的内容合并到一起后返回
     training_data = file_importer.get_nlu_data()
+
     if training_data.contains_no_pure_nlu_data():
         rasa.shared.utils.cli.print_error(
             f"Path '{nlu_data}' doesn't contain valid NLU data in it. "

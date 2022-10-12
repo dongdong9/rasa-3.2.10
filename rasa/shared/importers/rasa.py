@@ -32,21 +32,25 @@ class RasaFileImporter(TrainingDataImporter):
         print(f"\n-----开始为self._nlu_files赋值")
         self._nlu_files = rasa.shared.data.get_data_files(
             training_data_paths, rasa.shared.data.is_nlu_file
-        ) #yd。从training_data_paths目录下找出NLU文件所在的路径，即找到".\\data\\nlu.yml"
+        ) #yd。从training_data_paths对应的路径（例如"data"）下找出NLU文件所在的路径，即找到".\\data\\nlu.yml"
 
         print(f"\n-----开始为self._story_files赋值")
         self._story_files = rasa.shared.data.get_data_files(
             training_data_paths, YAMLStoryReader.is_stories_file
-        )#yd。从training_data_paths目录下找出存在以"stories"或"rules"开头的行的yml文件，即找到".\\data\\rules.yml"、".\\data\\stories.yml"和'.\\tests\\test_stories.yml'
+        )#yd。从training_data_paths对应的路径（例如"data"）下找出存在以"stories"或"rules"开头的行的yml文件，即找到".\\data\\rules.yml"、".\\data\\stories.yml"和'.\\tests\\test_stories.yml'
 
         print(f"\n-----开始为self._conversation_test_files赋值")
         self._conversation_test_files = rasa.shared.data.get_data_files(
             training_data_paths, YAMLStoryReader.is_test_stories_file
-        )#yd。从training_data_paths目录下找出文件名前缀为"test_"且存在以"stories"或"rules"开头的行的文件，返回结果为['.\\tests\\test_stories.yml']
+        )#yd。从training_data_paths对应的路径（例如"data"）下找出文件名前缀为"test_"且存在以"stories"或"rules"开头的行的文件，返回结果为['.\\tests\\test_stories.yml']
 
         self.config_file = config_file
 
     def get_config(self) -> Dict:
+        """
+        yd。功能：读取self.config_file（默认为config.yml）的内容，以dict的形式保存结果，例如返回的config内容为{'recipe': 'default.v1', 'language': 'zh', 'pipeline': [{'name': 'JiebaTokenizer'}, {'name': 'LanguageModelFeaturizer', 'model_name': 'bert', 'model_weights': 'bert-base-chinese'}, {'name': 'DIETClassifier', 'epochs': 100}], 'policies': None}
+        :return:
+        """
         """Retrieves model config (see parent class for full docstring)."""
         if not self.config_file or not os.path.exists(self.config_file):
             logger.debug("No configuration file was provided to the RasaFileImporter.")
@@ -74,10 +78,19 @@ class RasaFileImporter(TrainingDataImporter):
         )
 
     def get_nlu_data(self, language: Optional[Text] = "en") -> TrainingData:
+        """
+        yd。读取self._nlu_files（默认为".\\data\\nlu.yml"）所对应的内容
+        :param language:
+        :return:
+        """
         """Retrieves NLU training data (see parent class for full docstring)."""
         return utils.training_data_from_paths(self._nlu_files, language)
 
     def get_domain(self) -> Domain:
+        """
+        yd。功能：待补充
+        :return:
+        """
         """Retrieves model domain (see parent class for full docstring)."""
         domain = Domain.empty()
 
