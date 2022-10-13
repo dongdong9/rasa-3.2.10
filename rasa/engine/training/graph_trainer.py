@@ -49,7 +49,7 @@ class GraphTrainer:
         is_finetuning: bool = False,
     ) -> ModelMetadata:
         """Trains and packages a model and returns the prediction graph runner.
-
+           #yd。训练模型
         Args:
             model_configuration: The model configuration (schemas, language, etc.)
             importer: The importer which provides the training data for the training.
@@ -76,7 +76,8 @@ class GraphTrainer:
                 model_configuration.train_schema,
                 importer=importer,
                 is_finetuning=is_finetuning,
-            )
+            ) #yd，以key-value对的形式返回node_name到GraphNode实例的映射
+
             pruned_training_schema = self._prune_schema(
                 model_configuration.train_schema, fingerprint_run_outputs
             )
@@ -115,10 +116,12 @@ class GraphTrainer:
         is_finetuning: bool = False,
     ) -> Dict[Text, Union[FingerprintStatus, Any]]:
         """Runs the graph using fingerprints to determine which nodes need to re-run.
+           #yd。使用fingerprints来运行图，用来决定哪些nodes需要重新运行。
 
         Nodes which have a matching fingerprint key in the cache can either be removed
         entirely from the graph, or replaced with a cached value if their output is
         needed by descendent nodes.
+        #yd。缓存中具有匹配fingerprint的节点可以从图中完全删除，或者在后代节点需要其输出时用缓存值替换。
 
         Args:
             train_schema: The train graph schema that will be run in fingerprint mode.
@@ -128,7 +131,7 @@ class GraphTrainer:
         Returns:
             Mapping of node names to fingerprint results.
         """
-        fingerprint_schema = self._create_fingerprint_schema(train_schema)
+        fingerprint_schema = self._create_fingerprint_schema(train_schema)#yd。创建fingerprint_schema并返回
 
         fingerprint_graph_runner = self._graph_runner_class.create(
             graph_schema=fingerprint_schema,
@@ -136,23 +139,30 @@ class GraphTrainer:
             execution_context=ExecutionContext(
                 graph_schema=train_schema, is_finetuning=is_finetuning
             ),
-        )
+        ) #yd。创建一个graph_runner
 
         logger.debug("Running the train graph in fingerprint mode.")
         return fingerprint_graph_runner.run(inputs={PLACEHOLDER_IMPORTER: importer})
 
     def _create_fingerprint_schema(self, train_schema: GraphSchema) -> GraphSchema:
+        """
+        yd。功能：创建fingerprint_schema并返回
+        :param train_schema:
+        :return:
+        """
         fingerprint_schema = copy.deepcopy(train_schema)
         for node_name, schema_node in fingerprint_schema.nodes.items():
             # We make every node a target so that `graph_runner.run(...)` returns
             # the output for each node. We need the output of each node
             # to decide which nodes we can prune.
+            #yd。我们将每个节点都作为目标，以便' graph_runner.run(…)'返回每个节点的输出。我们需要每个节点的输出来决定我们可以修剪哪些节点。
             schema_node.is_target = True
 
             # We do not replace the input nodes as we need an up-to-date fingerprint of
             # any input data to the graph. This means we can prune according to what
             # has actually changed.
-            if not schema_node.is_input:
+            #yd。我们不替换输入节点，因为我们需要图中任何输入数据的最新fingerprint。这意味着我们可以根据实际发生的变化进行修剪。
+            if not schema_node.is_input: #yd。仅仅替换非输入schema_node
                 FingerprintComponent.replace_schema_node(schema_node, self._cache)
         return fingerprint_schema
 
@@ -170,8 +180,8 @@ class GraphTrainer:
 
         Args:
             schema: The graph to prune.
-            fingerprint_run_outputs: Node outputs from the fingerprint run as a mapping
-                from node name to output.
+            fingerprint_run_outputs: Node outputs from the fingerprint run as a mapping from node name to output.
+                                     #yd。node_name到graphNode实例的映射字典
 
         Returns:
             The pruned schema.

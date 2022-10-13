@@ -157,10 +157,15 @@ class DefaultV1Recipe(Recipe):
 
     @classmethod
     def _from_registry(cls, name: Text) -> RegisteredComponent:
+        """
+        yd。功能：通过name得到一个RegisteredComponent对象
+        :param name:
+        :return:
+        """
         # Importing all the default Rasa components will automatically register them
         from rasa.engine.recipes.default_components import DEFAULT_COMPONENTS  # noqa
 
-        if name in cls._registered_components:
+        if name in cls._registered_components: #yd。TODO：这里的_registered_components是怎么赋值的？
             return cls._registered_components[name]
 
         if "." in name:
@@ -181,13 +186,22 @@ class DefaultV1Recipe(Recipe):
         training_type: TrainingType = TrainingType.BOTH,
         is_finetuning: bool = False,
     ) -> GraphModelConfiguration:
+        """
+        yd。功能：1、利用config.yml中pipline和policies字段下的组件，构建SchemaNode，将组件名称和SchemaNode以key-value对的形式保存在train_nodes和predict_nodes中。
+                2、利用train_nodes和predict_nodes分别实例化两个GraphSchema对象，用这两个对象来实例化一个GraphModelConfiguration对象，并返回该对象。
+        :param config: config.yml等config文件的字段的值，例如{'recipe': 'default.v1', 'language': 'zh', 'pipeline': [{'name': 'JiebaTokenizer'}, {'name': 'LanguageModelFeaturizer', 'model_name': 'bert', 'model_weights': 'bert-base-chinese'}, {'name': 'DIETClassifier', 'epochs': 100}], 'policies': None}
+        :param cli_parameters: 以dict的形式保存的参数，例如{'finetuning_epoch_fraction': None, 'persist_nlu_training_data': False, 'num_threads': None}
+        :param training_type: 表示训练类型，候选结果有TrainingType.NLU、TrainingType.CORE、TrainingType.BOTH、TrainingType.END_TO_END
+        :param is_finetuning:
+        :return:
+        """
         """Converts the default config to graphs (see interface for full docstring)."""
         self._use_core = (
             bool(config.get("policies")) and not training_type == TrainingType.NLU
-        )
+        ) #yd。判断config.yml中是否有配置"policies"字段的内容，用比较结果来初始化self._use_core这个bool值
         self._use_nlu = (
             bool(config.get("pipeline")) and not training_type == TrainingType.CORE
-        )
+        )#yd。判断config.yml中是否有配置"pipeline"字段的内容，用比较结果来初始化self._use_nlu这个bool值
 
         if not self._use_nlu and training_type == TrainingType.NLU:
             raise InvalidConfigException(
@@ -205,11 +219,15 @@ class DefaultV1Recipe(Recipe):
             self._use_nlu
             and self._use_core
             and training_type == TrainingType.END_TO_END
-        )
+        ) #yd。如果self._use_nlu为True、self._use_core为True和training_type为TrainingType.END_TO_END三个条件都成立，则self._use_end_to_end为True
 
         self._is_finetuning = is_finetuning
 
+        #yd。train_nodes是以dict的形式保存着config.yml中字段pipline和policies配置的组件名称和对应的SchemaNode
+        #yd。preprocessors这个list中保存着config.yml中字段pipline的组件中与nlu（即与分词、词向量抽取有关）训练相关的组件名称，例如['run_JiebaTokenizer0', 'run_LanguageModelFeaturizer1']
         train_nodes, preprocessors = self._create_train_nodes(config, cli_parameters)
+
+        # yd。predict_nodes是以dict的形式保存着config.yml中字段pipline和policies配置的组件名称和对应的SchemaNode
         predict_nodes = self._create_predict_nodes(config, preprocessors, train_nodes)
 
         core_target = "select_prediction" if self._use_core else None
@@ -228,6 +246,13 @@ class DefaultV1Recipe(Recipe):
     def _create_train_nodes(
         self, config: Dict[Text, Any], cli_parameters: Dict[Text, Any]
     ) -> Tuple[Dict[Text, SchemaNode], List[Text]]:
+        """
+        yd。功能：1、从config.yml的pipline的组件中，选择与nlu（即与分词、词向量抽取有关）训练相关的组件，将组件的名称保存在数组preprocessors中，例如['run_JiebaTokenizer0', 'run_LanguageModelFeaturizer1']；
+                 2、将config.yml的pipline的组件和policies的组件，都保存到train_nodes这个字典中。
+        :param config: config.yml等config文件的字段的值，例如{'recipe': 'default.v1', 'language': 'zh', 'pipeline': [{'name': 'JiebaTokenizer'}, {'name': 'LanguageModelFeaturizer', 'model_name': 'bert', 'model_weights': 'bert-base-chinese'}, {'name': 'DIETClassifier', 'epochs': 100}], 'policies': None}
+        :param cli_parameters: 以dict的形式保存的参数，例如{'finetuning_epoch_fraction': None, 'persist_nlu_training_data': False, 'num_threads': None}
+        :return:
+        """
         from rasa.graph_components.validators.default_recipe_validator import (
             DefaultV1RecipeValidator,
         )
@@ -237,12 +262,13 @@ class DefaultV1Recipe(Recipe):
 
         train_config = copy.deepcopy(config)
 
+        #yd。定义由两个图节点组成的train_nodes
         train_nodes = {
             "schema_validator": SchemaNode(
                 needs={"importer": PLACEHOLDER_IMPORTER},
                 uses=DefaultV1RecipeValidator,
                 constructor_name="create",
-                fn="validate",
+                fn="validate", #yd。
                 config={},
                 is_input=True,
             ),
@@ -261,12 +287,12 @@ class DefaultV1Recipe(Recipe):
         if self._use_nlu:
             preprocessors = self._add_nlu_train_nodes(
                 train_config, train_nodes, cli_parameters
-            )
+            )#yd。从config.yml的pipline的组件中，选择与nlu（即与分词、词向量抽取有关）训练相关的组件，将其添加到train_nodes中，并返回这些组件的名称，例如['run_JiebaTokenizer0', 'run_LanguageModelFeaturizer1']
 
         if self._use_core:
             self._add_core_train_nodes(
                 train_config, train_nodes, preprocessors, cli_parameters
-            )
+            )#yd。将config.yml的policies中的组件，添加到train_nodes这个字典中
 
         return train_nodes, preprocessors
 
@@ -276,7 +302,16 @@ class DefaultV1Recipe(Recipe):
         train_nodes: Dict[Text, SchemaNode],
         cli_parameters: Dict[Text, Any],
     ) -> List[Text]:
+        """
+        yd。功能：从config.yml的pipline的组件中，选择与nlu（即与分词、词向量抽取有关）训练相关的组件，将其添加到train_nodes中，并返回这些组件的名称，例如['run_JiebaTokenizer0', 'run_LanguageModelFeaturizer1']
+        :param train_config: config.yml等config文件的字段的值，例如{'recipe': 'default.v1', 'language': 'zh', 'pipeline': [{'name': 'JiebaTokenizer'}, {'name': 'LanguageModelFeaturizer', 'model_name': 'bert', 'model_weights': 'bert-base-chinese'}, {'name': 'DIETClassifier', 'epochs': 100}], 'policies': None}
+        :param train_nodes: 包含两个SchemaNode的字典，例如{'schema_validator': SchemaNode(), 'finetuning_validator': SchemaNode()}
+        :param cli_parameters: 以dict的形式保存的参数，例如{'finetuning_epoch_fraction': None, 'persist_nlu_training_data': False, 'num_threads': None}
+        :return:preprocessors 保存pipline字段中，与nlu（即与分词、词向量抽取有关）训练相关的组件，例如['run_JiebaTokenizer0', 'run_LanguageModelFeaturizer1']
+        """
         persist_nlu_data = bool(cli_parameters.get("persist_nlu_training_data"))
+
+        #yd。为train_nodes添加新的key-value对
         train_nodes["nlu_training_data_provider"] = SchemaNode(
             needs={"importer": "finetuning_validator"},
             uses=NLUTrainingDataProvider,
@@ -293,9 +328,11 @@ class DefaultV1Recipe(Recipe):
         last_run_node = "nlu_training_data_provider"
         preprocessors: List[Text] = []
 
+        # yd。idx是pipline字段配置的组件的索引号；config是具体某个组件，例如{'name': 'JiebaTokenizer'} 或
+        # yd。{'name': 'LanguageModelFeaturizer', 'model_name': 'bert', 'model_weights': 'bert-base-chinese'}
         for idx, config in enumerate(train_config["pipeline"]):
-            component_name = config.pop("name")
-            component = self._from_registry(component_name)
+            component_name = config.pop("name") #yd。取出组件的名称，例如'JiebaTokenizer'
+            component = self._from_registry(component_name) #yd。通过component_name得到一个RegisteredComponent对象component
             component_name = f"{component_name}{idx}"
 
             if self.ComponentType.MODEL_LOADER in component.types:
@@ -317,14 +354,14 @@ class DefaultV1Recipe(Recipe):
                     last_run_node,
                     config,
                     cli_parameters,
-                )
+                )#yd。向train_nodes这个dict中添加key-value对，key为"train_" + 组件名称，即这里的from_resource, value 为SchemaNode
 
             if component.types.intersection(
                 {
                     self.ComponentType.MESSAGE_TOKENIZER,
                     self.ComponentType.MESSAGE_FEATURIZER,
                 }
-            ):
+            ): #yd。如果component.types 这个set中包含MESSAGE_TOKENIZER或者MESSAGE_FEATURIZER
                 last_run_node = self._add_nlu_process_node(
                     train_nodes,
                     component.clazz,
@@ -348,7 +385,17 @@ class DefaultV1Recipe(Recipe):
         config: Dict[Text, Any],
         cli_parameters: Dict[Text, Any],
     ) -> Text:
-        config_from_cli = self._extra_config_from_cli(cli_parameters, component, config)
+        """
+        yd。功能：向train_nodes这个dict中添加key-value对，key为"train_" + 组件名称, value 为SchemaNode
+        :param train_nodes:
+        :param component:
+        :param component_name:
+        :param last_run_node:
+        :param config:
+        :param cli_parameters:
+        :return:train_node_name 向train_nodes中加入的节点的名称
+        """
+        config_from_cli = self._extra_config_from_cli(cli_parameters, component, config)#yd。从cli_parameter中获取与component有关的参数
         model_provider_needs = self._get_model_provider_needs(train_nodes, component)
 
         train_node_name = f"train_{component_name}"
@@ -368,6 +415,14 @@ class DefaultV1Recipe(Recipe):
         component: Type[GraphComponent],
         component_config: Dict[Text, Any],
     ) -> Dict[Text, Any]:
+        """
+        yd。功能：如果component在字典cli_args_mapping中，则从cli_args_mapping中取出对应的参数名称param，
+                并从cli_parameters中取出该参数的值，即cli_parameters[param]，构成字典{param: cli_parameters[param]}
+        :param cli_parameters:
+        :param component:
+        :param component_config:
+        :return: config_from_cli 由{param: cli_parameters[param]}组成的字典
+        """
         from rasa.nlu.classifiers.mitie_intent_classifier import MitieIntentClassifier
         from rasa.nlu.extractors.mitie_entity_extractor import MitieEntityExtractor
         from rasa.nlu.classifiers.sklearn_intent_classifier import (
@@ -412,6 +467,16 @@ class DefaultV1Recipe(Recipe):
         component_config: Dict[Text, Any],
         from_resource: Optional[Text] = None,
     ) -> Text:
+        """
+        yd。功能：向train_nodes这个dict中添加key-value对，key为"run_" + 组件名称, value为SchemaNode
+        :param train_nodes:
+        :param component_class:
+        :param component_name:
+        :param last_run_node:
+        :param component_config:
+        :param from_resource:
+        :return:node_name 新加入到train_nodes的节点名称
+        """
         resource_needs = {}
         if from_resource:
             resource_needs = {"resource": from_resource}
@@ -437,6 +502,12 @@ class DefaultV1Recipe(Recipe):
     def _get_model_provider_needs(
         self, nodes: Dict[Text, SchemaNode], component_class: Type[GraphComponent]
     ) -> Dict[Text, Text]:
+        """
+        yd。功能：
+        :param nodes:
+        :param component_class:
+        :return:
+        """
         model_provider_needs = {}
         component = self._from_registry(component_class.__name__)
 
@@ -463,6 +534,14 @@ class DefaultV1Recipe(Recipe):
         preprocessors: List[Text],
         cli_parameters: Dict[Text, Any],
     ) -> None:
+        """
+        yd。功能：将config.yml的policies中的组件，添加到train_nodes这个字典中
+        :param train_config:
+        :param train_nodes:
+        :param preprocessors:
+        :param cli_parameters:
+        :return:
+        """
         train_nodes["domain_provider"] = SchemaNode(
             needs={"importer": "finetuning_validator"},
             uses=DomainProvider,
@@ -578,7 +657,13 @@ class DefaultV1Recipe(Recipe):
         preprocessors: List[Text],
         train_nodes: Dict[Text, SchemaNode],
     ) -> Dict[Text, SchemaNode]:
-
+        """
+        yd。功能：给字典predict_nodes赋值，key是各个SchemaNodes的名称，value是SchemaNode。这些Node是config.yml的pipline字段和policies字段下的组件
+        :param config:
+        :param preprocessors:
+        :param train_nodes:
+        :return:
+        """
         predict_config = copy.deepcopy(config)
         predict_nodes = {}
 
@@ -590,14 +675,14 @@ class DefaultV1Recipe(Recipe):
             uses=NLUMessageConverter,
             fn="convert_user_message",
             config={},
-        )
+        ) #yd。向predict_nodes添加新的key-value对，其中key为"nlu_message_converter"，value为SchemaNode
 
         last_run_nlu_node = "nlu_message_converter"
 
         if self._use_nlu:
             last_run_nlu_node = self._add_nlu_predict_nodes(
                 last_run_nlu_node, predict_config, predict_nodes, train_nodes
-            )
+            ) #yd。将config.yml的pipline字段中的组件，添加到train_nodes中
 
         domain_needs = {}
         if self._use_core:
@@ -610,7 +695,7 @@ class DefaultV1Recipe(Recipe):
             uses=RegexMessageHandler,
             fn="process",
             config={},
-        )
+        ) #yd。向predict_nodes添加新的key-value对，其中key为"run_RegexMessageHandler"，value为SchemaNode
 
         if self._use_core:
             self._add_core_predict_nodes(
@@ -626,6 +711,14 @@ class DefaultV1Recipe(Recipe):
         predict_nodes: Dict[Text, SchemaNode],
         train_nodes: Dict[Text, SchemaNode],
     ) -> Text:
+        """
+        yd。将
+        :param last_run_node:
+        :param predict_config:
+        :param predict_nodes:
+        :param train_nodes:
+        :return:
+        """
         for idx, config in enumerate(predict_config["pipeline"]):
             component_name = config.pop("name")
             component = self._from_registry(component_name)
@@ -644,7 +737,7 @@ class DefaultV1Recipe(Recipe):
                     self.ComponentType.MESSAGE_TOKENIZER,
                     self.ComponentType.MESSAGE_FEATURIZER,
                 }
-            ):
+            ): #yd。如果当前component是与分词、词向量抽取有关
                 last_run_node = self._add_nlu_predict_node_from_train(
                     predict_nodes,
                     component_name,
@@ -692,6 +785,16 @@ class DefaultV1Recipe(Recipe):
         item_config: Dict[Text, Any],
         from_resource: bool = False,
     ) -> Text:
+        """
+        yd。功能：
+        :param predict_nodes:
+        :param node_name:
+        :param train_nodes:
+        :param last_run_node:
+        :param item_config:
+        :param from_resource:
+        :return:
+        """
         train_node_name = f"run_{node_name}"
         resource = None
         if from_resource:
@@ -714,6 +817,14 @@ class DefaultV1Recipe(Recipe):
         component_name: Text,
         last_run_node: Text,
     ) -> Text:
+        """
+        yd。功能：
+        :param predict_nodes:
+        :param node:
+        :param component_name:
+        :param last_run_node:
+        :return:
+        """
         node_name = f"run_{component_name}"
 
         model_provider_needs = self._get_model_provider_needs(predict_nodes, node.uses)
@@ -844,6 +955,13 @@ class DefaultV1Recipe(Recipe):
         config: Dict,
         training_type: Optional[TrainingType] = TrainingType.BOTH,
     ) -> Tuple[Dict[Text, Any], Set[str], Set[str]]:
+        """
+        yd。根据training_type所对应的全部字段，获取config中缺失的字段，保存在missing_keys中；获取config中需要配置的字段，保存在keys_to_configure中
+        :param config_file_path: config文件的路径，默认值为"config.yml"
+        :param config: 以dict形式保存的合并后的config文件内容，例如{'recipe': 'default.v1', 'language': 'zh', 'pipeline': [{'name': 'JiebaTokenizer'}, {'name': 'LanguageModelFeaturizer', 'model_name': 'bert', 'model_weights': 'bert-base-chinese'}, {'name': 'DIETClassifier', 'epochs': 100}], 'policies': None}
+        :param training_type: 训练类型，例如TrainingType.NLU
+        :return:
+        """
         """Determine configuration from auto-filled configuration file.
 
         Keys that are provided and have a value in the file are kept. Keys that are not
@@ -859,12 +977,12 @@ class DefaultV1Recipe(Recipe):
             training_type: Optional training type to auto-configure. By default
             both core and NLU will be auto-configured.
         """
-        missing_keys = DefaultV1Recipe._get_missing_config_keys(config, training_type)
+        missing_keys = DefaultV1Recipe._get_missing_config_keys(config, training_type) #yd。功能：根据training_type，以set的形式返回config中缺失的字段
         keys_to_configure = DefaultV1Recipe._get_unspecified_autoconfigurable_keys(
             config, training_type
-        )
+        )#yd。功能：根据training_type，获取所有需要配置的字段，以set的形式返回config中没有配置的字段
 
-        if keys_to_configure:
+        if keys_to_configure: #yd。如果还有字段需要配置
             config = DefaultV1Recipe.complete_config(config, keys_to_configure)
             DefaultV1Recipe._dump_config(
                 config, config_file_path, missing_keys, keys_to_configure, training_type
@@ -877,6 +995,12 @@ class DefaultV1Recipe(Recipe):
         config: Dict[Text, Any],
         training_type: Optional[TrainingType] = TrainingType.BOTH,
     ) -> Set[Text]:
+        """
+        yd。功能：根据training_type，获取所有需要配置的字段，以set的形式返回config中没有配置的字段
+        :param config: 以dict形式保存的合并后的config文件内容，例如{'recipe': 'default.v1', 'language': 'zh', 'pipeline': [{'name': 'JiebaTokenizer'}, {'name': 'LanguageModelFeaturizer', 'model_name': 'bert', 'model_weights': 'bert-base-chinese'}, {'name': 'DIETClassifier', 'epochs': 100}], 'policies': None}
+        :param training_type: 训练类型，例如TrainingType.NLU
+        :return:
+        """
         if training_type == TrainingType.NLU:
             all_keys = rasa.shared.constants.CONFIG_AUTOCONFIGURABLE_KEYS_NLU
         elif training_type == TrainingType.CORE:
@@ -891,6 +1015,12 @@ class DefaultV1Recipe(Recipe):
         config: Dict[Text, Any],
         training_type: Optional[TrainingType] = TrainingType.BOTH,
     ) -> Set[Text]:
+        """
+        yd。功能：根据training_type，以set的形式返回config中缺失的字段
+        :param config: 以dict的形式保存每个字段的内容，例如{'recipe': 'default.v1', 'language': 'zh', 'pipeline': [{'name': 'JiebaTokenizer'}, {'name': 'LanguageModelFeaturizer', 'model_name': 'bert', 'model_weights': 'bert-base-chinese'}, {'name': 'DIETClassifier', 'epochs': 100}], 'policies': None}
+        :param training_type:
+        :return:
+        """
         if training_type == TrainingType.NLU:
             all_keys = rasa.shared.constants.CONFIG_KEYS_NLU
         elif training_type == TrainingType.CORE:

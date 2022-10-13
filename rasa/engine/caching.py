@@ -169,22 +169,22 @@ class LocalTrainingCache(TrainingCache):
 
         The `Cache` setting can be configured via environment variables.
         """
-        self._cache_location = LocalTrainingCache._get_cache_location()
+        self._cache_location = LocalTrainingCache._get_cache_location() #yd。获取cache所对应的路径，默认为".rasa\cache"
 
         self._max_cache_size = float(
             os.environ.get(CACHE_SIZE_ENV, DEFAULT_CACHE_SIZE_MB)
-        )
+        ) #yd。获取默认的_max_cache_size值
 
         self._cache_database_name = os.environ.get(
             CACHE_DB_NAME_ENV, DEFAULT_CACHE_NAME
-        )
+        ) #yd。获取默认的_cache_database_name，即cache.db
 
         if not self._cache_location.exists() and not self._is_disabled():
             logger.debug(
                 f"Creating caching directory '{self._cache_location}' because "
                 f"it doesn't exist yet."
             )
-            self._cache_location.mkdir(parents=True)
+            self._cache_location.mkdir(parents=True) #yd。创建cache对应的文件夹
 
         self._sessionmaker = self._create_database()
 

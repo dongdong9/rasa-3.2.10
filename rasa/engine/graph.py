@@ -25,31 +25,40 @@ class SchemaNode:
     Args:
         needs: describes which parameters in `fn` (or `constructor_name`
             if `eager==False`) are filled by which parent nodes.
+            #yd。描述'fn'(或'constructor_name' 如果'eager==False')中的哪些参数由哪个父节点填充
         uses: The class which models the behavior of this specific graph node.
+              #yd。为这个特定图节点的行为建模的类。
         constructor_name: The name of the constructor which should be used to
             instantiate the component. If `eager==False` then the `constructor` can
             also specify parameters which are filled by parent nodes. This is e.g.
             useful if a parent node returns a `Resource` and this node wants to
             directly load itself from this resource.
+            #yd。用于实例化组件的构造函数的名称。如果'eager==False'，则'constructor_name'也可以用来指定哪些参数。
         fn: The name of the function which should be called on the instantiated
             component when the graph is executed. The parameters from `needs` are
             filled from the parent nodes.
+            #yd。在执行图时，应该从实例化组件上调用的函数名称。`needs`的参数是来自与父节点
         config: The user's configuration for this graph node. This configuration
             does not need to be specify all possible parameters; the default values
             for missing parameters will be filled in later.
+            #yd。这个图节点的配置参数。
         eager: If `eager` then the component is instantiated before the graph is run.
             Otherwise it's instantiated as the graph runs (lazily). Usually we always
             instantiated lazily during training and eagerly during inference (to
             avoid that the first prediction takes longer).
+            #yd。如果`eager`为True，则在图运行之前组件就被实例化了；否则组件在图运行时才会被实例化（懒惰地）。
+                通常我们在训练过程中懒惰地实例化组件（即图运行时才实例化组件）；在推理时在图运行之前就将组件实例化（以避免第一次预测时用时过长）。
         is_target: If `True` then this node can't be pruned during fingerprinting
             (it might be replaced with a cached value though). This is e.g. used for
             all components which train as their result always needs to be added to
             the model archive so that the data is available during inference.
         is_input: Nodes with `is_input` are _always_ run (also during the fingerprint
             run). This makes sure that we e.g. detect changes in file contents.
+            #yd。is_input为True的节点总是在运行的，确保我们能够检测到文件内容的变化。
         resource: If given, then the graph node is loaded from an existing resource
             instead of instantiated from scratch. This is e.g. used to load a trained
             component for predictions.
+            #yd。如果给定了 resource，则从现有resource中加载图节点而不是从头开始实例化。例如为了prediction，用来加载一个训练好的组件。
     """
 
     needs: Dict[Text, Text]
@@ -131,6 +140,7 @@ class GraphSchema:
 
     def minimal_graph_schema(self, targets: Optional[List[Text]] = None) -> GraphSchema:
         """Returns a new schema where all nodes are a descendant of a target."""
+        #yd。返回一个新的GraphSchema，在新的schema里面，所有的nodes都是一个target的后代。没有理解？？？
         dependencies = self._all_dependencies_schema(
             targets if targets else self.target_names
         )
@@ -144,6 +154,11 @@ class GraphSchema:
         )
 
     def _all_dependencies_schema(self, targets: List[Text]) -> List[Text]:
+        """
+        yd。不知道这个是干啥
+        :param targets:
+        :return:
+        """
         required = []
         for target in targets:
             required.append(target)
@@ -450,7 +465,7 @@ class GraphNode:
             constructor_kwargs = rasa.shared.utils.common.minimal_kwargs(
                 kwargs, self._constructor_fn
             )
-            self._load_component(**constructor_kwargs)
+            self._load_component(**constructor_kwargs) #yd。加载component，即将LanguageModelFeaturizer等component实例化
             run_kwargs = {
                 k: v for k, v in kwargs.items() if k not in constructor_kwargs
             }
