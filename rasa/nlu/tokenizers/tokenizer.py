@@ -120,7 +120,7 @@ class Tokenizer(GraphComponent, abc.ABC):
         ...
 
     def process_training_data(self, training_data: TrainingData) -> TrainingData:
-        """Tokenize all training data."""
+        """Tokenize all training data.""" #yd。对每个Message对象(即example)用结巴进行分词，并将分词结果保存在example.data这个字典中
         for example in training_data.training_examples:
             for attribute in MESSAGE_ATTRIBUTES:
                 if (
@@ -130,8 +130,8 @@ class Tokenizer(GraphComponent, abc.ABC):
                     if attribute in [INTENT, ACTION_NAME, INTENT_RESPONSE_KEY]:
                         tokens = self._split_name(example, attribute)
                     else:
-                        tokens = self.tokenize(example, attribute)
-                    example.set(TOKENS_NAMES[attribute], tokens)
+                        tokens = self.tokenize(example, attribute) #yd。功能：使用jieba对example.data的"text"字段进行分词，并返回由Token对象组成的list，即tokens
+                    example.set(TOKENS_NAMES[attribute], tokens) #yd。将分词结果写入到example.data这个字典中
         return training_data
 
     def process(self, messages: List[Message]) -> List[Message]:

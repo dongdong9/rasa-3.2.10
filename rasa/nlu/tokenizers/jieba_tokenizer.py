@@ -93,10 +93,16 @@ class JiebaTokenizer(Tokenizer):
         return self._resource
 
     def tokenize(self, message: Message, attribute: Text) -> List[Token]:
+        """
+        yd。功能：使用jieba对message.data的"text"字段进行分词，并返回由Token对象组成的list，即tokens
+        :param message:
+        :param attribute:
+        :return:
+        """
         """Tokenizes the text of the provided attribute of the incoming message."""
         import jieba
 
-        text = message.get(attribute)
+        text = message.get(attribute) #yd。功能：从message.data字典中取出attribute对应字段的内容，比如取出"text"字段的内容
 
         tokenized = jieba.tokenize(text)
         tokens = [Token(word, start) for (word, start, end) in tokenized]

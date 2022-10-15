@@ -7,7 +7,8 @@ from rasa.shared.nlu.training_data.training_data import TrainingData
 
 def training_data_from_paths(paths: Iterable[Text], language: Text) -> TrainingData:
     """
-    yd。功能：读取paths所对应的文件，将读取的结果保存在training_data_sets中，并将training_data_sets合并到一起
+    yd。功能：读取paths（例如['data\\nlu.yml']）所对应的文件，解析文件中每个句子的意图和实体，
+            用解析结果构建TrainingData类对象保存在training_data_sets中，最后将training_data_sets中的TrainingData类对象合并成一个。
     :param paths:
     :param language:
     :return:

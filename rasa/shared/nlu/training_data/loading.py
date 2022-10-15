@@ -43,10 +43,10 @@ _json_format_heuristics: Dict[Text, Callable[[Any, Text], bool]] = {
 
 def load_data(resource_name: Text, language: Optional[Text] = "en") -> "TrainingData":
     """
-    yd。功能：读取resource_name所对应的文件
+    yd。功能：读取resource_name（例如'data\\nlu.yml'）所对应的文件，解析文件中每个句子的意图和实体，用解析结果构建TrainingData类对象
     :param resource_name:
     :param language:
-    :return:
+    :return: training_data，由'data\\nlu.yml'中每个句子的意图和实体组成的TrainingData类对象
     """
     """Load training data from disk.
 
@@ -59,7 +59,9 @@ def load_data(resource_name: Text, language: Optional[Text] = "en") -> "Training
     else:
         files = rasa.shared.utils.io.list_files(resource_name)
 
-    data_sets = [_load(f, language) for f in files] #yd。读取files所对应的文件，将读取的结果保存在data_sets中
+    # yd。功能：如果filename是RASA_YAML格式，则读取文件的内容。
+    # 例如如果filename是"data/nlu.yml"，则读取文件内容，解析出nlu意图和实体训练数据，并将这些信息保存在TrainingData类对象中
+    data_sets = [_load(f, language) for f in files] #yd。由TrainingData类对象组成的list
     training_data_sets: List[TrainingData] = [ds for ds in data_sets if ds]
     if len(training_data_sets) == 0:
         training_data = TrainingData()
@@ -97,7 +99,8 @@ def _reader_factory(fformat: Text) -> Optional["TrainingDataReader"]:
 
 def _load(filename: Text, language: Optional[Text] = "en") -> Optional["TrainingData"]:
     """Loads a single training data file from disk."""
-
+    #yd。功能：如果filename是RASA_YAML格式，则读取文件的内容。
+    # 例如如果filename是"data/nlu.yml"，则读取文件内容，解析出nlu意图和实体训练数据，并将这些信息保存在TrainingData类对象中
     fformat = guess_format(filename) #yd。获取file_name对应文件的类型，是UNK还是RASA_YAML
     if fformat == UNK:
         raise ValueError(f"Unknown data format for file '{filename}'.")

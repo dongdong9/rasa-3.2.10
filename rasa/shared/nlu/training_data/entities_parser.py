@@ -25,7 +25,7 @@ GROUP_COMPLETE_MATCH = 0
 # regex for: `[entity_text]((entity_type(:entity_synonym)?)|{entity_dict}|[list_entity_dicts])` # noqa: E501, W505
 ENTITY_REGEX = re.compile(
     r"\[(?P<entity_text>[^\]]+?)\](\((?P<entity>[^:)]+?)(?:\:(?P<value>[^)]+))?\)|\{(?P<entity_dict>[^}]+?)\}|\[(?P<list_entity_dicts>.*?)\])"  # noqa: E501, W505
-)
+) #
 
 SINGLE_ENTITY_DICT = re.compile(r"{(?P<entity_dict>[^}]+?)\}")
 
@@ -44,9 +44,10 @@ class EntityAttributes(NamedTuple):
 
 def find_entities_in_training_example(example: Text) -> List[Dict[Text, Any]]:
     """Extracts entities from an annotated utterance.
+    #yd。从标注的话语文本中抽取实体，每个实体都用dict表示，所有实体组成entities，例如[{'start': 0, 'end': 2, 'value': '感冒', 'entity': 'disease'}]
 
     Args:
-        example: Annotated utterance.
+        example: Annotated utterance. #yd。被标注的话语文本，例如"[感冒](disease)了该吃什么药"
 
     Returns:
         Extracted entities.
@@ -54,11 +55,11 @@ def find_entities_in_training_example(example: Text) -> List[Dict[Text, Any]]:
     entities = []
     offset = 0
 
-    for match in re.finditer(ENTITY_REGEX, example):
+    for match in re.finditer(ENTITY_REGEX, example): #yd。match表示抽取的正则匹配结果，例如"[感冒](disease)"
         logger.debug(f"Entity annotation regex match: {match}")
         if match.groupdict()[GROUP_ENTITY_DICT] or match.groupdict()[GROUP_ENTITY_TYPE]:
             # Text is annotated with a single entity
-            entity_attributes = extract_entity_attributes(match)
+            entity_attributes = extract_entity_attributes(match) #yd。功能：将正则匹配结果match的内容解析出来，得到一个EntityAttributes类对象
 
             start_index = match.start() - offset
             end_index = start_index + len(entity_attributes.text)
@@ -105,19 +106,19 @@ def find_entities_in_training_example(example: Text) -> List[Dict[Text, Any]]:
 def extract_entity_attributes(match: Match) -> EntityAttributes:
     """Extract the entity attributes, i.e. type, value, etc., from the
     regex match.
-
+    #yd。功能：将正则匹配结果match的内容解析出来，得到一个EntityAttributes类对象
     Args:
         match: Regex match to extract the entity attributes from.
 
     Returns:
         EntityAttributes object.
     """
-    entity_text = match.groupdict()[GROUP_ENTITY_TEXT]
+    entity_text = match.groupdict()[GROUP_ENTITY_TEXT] #yd。获取实体的内容，例如"感冒"
 
     if match.groupdict()[GROUP_ENTITY_DICT]:
         return extract_entity_attributes_from_dict(entity_text, match)
 
-    entity_type = match.groupdict()[GROUP_ENTITY_TYPE]
+    entity_type = match.groupdict()[GROUP_ENTITY_TYPE] #yd。获取实体的类别，例如disease
 
     if match.groupdict()[GROUP_ENTITY_VALUE]:
         entity_value = match.groupdict()[GROUP_ENTITY_VALUE]

@@ -336,9 +336,9 @@ replace_environment_variables()
 
 def read_yaml(content: Text, reader_type: Union[Text, List[Text]] = "safe") -> Any:
     """Parses yaml from a text.
-
+    #yd。功能：将yml文件的文本内容转换为dict格式
     Args:
-        content: A text containing yaml content.
+        content: A text containing yaml content. #yd。表示读取的yml文件内容，以文本形式保存
         reader_type: Reader type to use. By default "safe" will be used.
 
     Raises:

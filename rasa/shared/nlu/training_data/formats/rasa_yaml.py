@@ -52,7 +52,7 @@ class RasaYAMLReader(TrainingDataReader):
 
     def __init__(self) -> None:
         super().__init__()
-        self.training_examples: List[Message] = []
+        self.training_examples: List[Message] = [] #yd。在方法_parse_intent()将Message类对象添加到self.training_examples中
         self.entity_synonyms: Dict[Text, Text] = {}
         self.regex_features: List[Dict[Text, Text]] = []
         self.lookup_tables: List[Dict[Text, Any]] = []
@@ -60,7 +60,7 @@ class RasaYAMLReader(TrainingDataReader):
 
     def validate(self, string: Text) -> None:
         """Check if the string adheres to the NLU yaml data schema.
-
+        #yd。用于判断yml文件的内容string是否有效
         If the string is not in the right format, an exception will be raised."""
         try:
             validation.validate_yaml_schema(string, NLU_SCHEMA_FILE)
@@ -71,27 +71,33 @@ class RasaYAMLReader(TrainingDataReader):
     def reads(  # type: ignore[override]
         self, string: Text, **kwargs: Any
     ) -> "TrainingData":
+        """
+        yd。功能：解析nlu意图和实体训练数据（包括意图类别和实体），将解析后的结果构造成TrainingData类对象并返回。
+        :param string: nlu训练数据的字符串内容（包括意图类别和实体），例如data/nlu.yml的内容
+        :param kwargs:
+        :return: TrainingData类对象，成员变量self.training_examples保存着每个训练样本的意图和实体信息
+        """
         """Reads TrainingData in YAML format from a string.
 
         Args:
-            string: String with YAML training data.
+            string: String with YAML training data. #yd。即yml格式的文件中，将每行文本以换行符进行连接后得到的字符串。
             **kwargs: Keyword arguments.
 
         Returns:
             New `TrainingData` object with parsed training data.
         """
-        self.validate(string)
+        self.validate(string) #yd。功能：用于判断yml文件的内容string是否有效
 
-        yaml_content = rasa.shared.utils.io.read_yaml(string)
+        yaml_content = rasa.shared.utils.io.read_yaml(string) #yd。将string由字符串转换为dict格式
 
         if not validation.validate_training_data_format_version(
             yaml_content, self.filename
-        ):
+        ): #yd。如果返回True，则表示当前版本的rasa源码可以处理self.filename对应的yml文件
             return TrainingData()
 
         for key, value in yaml_content.items():
             if key == KEY_NLU:
-                self._parse_nlu(value)
+                self._parse_nlu(value) #yd。解析nlu意图和实体训练数据，将每个句子的解析结果构造成Message类对象并追加到self.training_examples这个list中
             elif key == KEY_RESPONSES:
                 self.responses = value
 
@@ -104,11 +110,15 @@ class RasaYAMLReader(TrainingDataReader):
         )
 
     def _parse_nlu(self, nlu_data: Optional[List[Dict[Text, Any]]]) -> None:
-
+        """
+        yd。功能：按意图类别来解析每个意图下的训练数据，将每个句子的解析结果（意图、实体及类别）构造成Message类对象，将类对象追加到self.training_examples这个list中
+        :param nlu_data: 以list形式保存的nlu训练数据，格式为[{'intent': 意图类别, 'examples':将各个句子用换行符相连后的字符串}]
+        :return:
+        """
         if not nlu_data:
             return
 
-        for nlu_item in nlu_data:
+        for nlu_item in nlu_data: #yd。nlu_item的格式为{'intent': 意图类别, 'examples':将各个句子用换行符相连后的字符串}
             if not isinstance(nlu_item, dict):
                 rasa.shared.utils.io.raise_warning(
                     f"Unexpected block found in '{self.filename}':\n"
@@ -139,6 +149,11 @@ class RasaYAMLReader(TrainingDataReader):
                 )
 
     def _parse_intent(self, intent_data: Dict[Text, Any]) -> None:
+        """
+        yd。功能：解析当前意图下每个句子的信息，利用每个句子的文本、实体和意图等信息构造Message类对象，将该对象追加到self.training_examples这个list中。
+        :param intent_data: 是一个字典，格式为{"intent": xx, "examples":}，"examples"字段的值是将句子用换行符拼接得到的字符串，例如'- [感冒](disease)了该吃什么药\n - 我[便秘](disease)了，该吃什么药'
+        :return:
+        """
         import rasa.shared.nlu.training_data.entities_parser as entities_parser
         import rasa.shared.nlu.training_data.synonyms_parser as synonyms_parser
 
@@ -157,21 +172,27 @@ class RasaYAMLReader(TrainingDataReader):
         intent_metadata = intent_data.get(KEY_METADATA)
         for example, entities, metadata in self._parse_training_examples(
             examples, intent
-        ):
+        ): #yd。获取每个样本的文本example（例如'[减肥](disease)有什么好的医院或者健康中心推荐吗？'），实体和metadata
 
-            plain_text = entities_parser.replace_entities(example)
+            plain_text = entities_parser.replace_entities(example) #yd。对example进行处理，去掉实体标记，例如将'[减肥](disease)有什么好的医院或者健康中心推荐吗？'变为'减肥有什么好的医院或者健康中心推荐吗？'
 
             synonyms_parser.add_synonyms_from_entities(
                 plain_text, entities, self.entity_synonyms
             )
 
             self.training_examples.append(
-                Message.build(plain_text, intent, entities, intent_metadata, metadata)
+                Message.build(plain_text, intent, entities, intent_metadata, metadata) #yd。利用句子、意图、实体列表等构造Message类对象。
             )
 
     def _parse_training_examples(
         self, examples: Union[Text, List[Dict[Text, Any]]], intent: Text
     ) -> List[Tuple[Text, List[Dict[Text, Any]], Optional[Any]]]:
+        """
+        yd。功能：解析每个训练句子，得到标记的实体及类别。将句子文本、实体和metadata三者组成tuple，由这些tuple构成results
+        :param examples: 由换行符连接的训练句子，例如'- [感冒](disease)了该吃什么药\n - 我[便秘](disease)了，该吃什么药'
+        :param intent: 表示这些训练样本的意图，例如"medicine"
+        :return: results，由tuple (句子，实体，metadata)组成的list，例如[('[感冒](disease)了该吃什么药', [{'start': 0, 'end': 2, 'value': '感冒', 'entity': 'disease'}], None), ('我[便秘](disease)了，该吃什么药', [{'start': 1, 'end': 3, 'value': '便秘', 'entity': 'disease'}], None)]
+        """
         import rasa.shared.nlu.training_data.entities_parser as entities_parser
 
         if isinstance(examples, list):
@@ -207,7 +228,7 @@ class RasaYAMLReader(TrainingDataReader):
 
         results = []
         for example, metadata in example_tuples:
-            entities = entities_parser.find_entities_in_training_example(example)
+            entities = entities_parser.find_entities_in_training_example(example) #yd。功能：从标注的话语中抽取实体列表
             results.append((example, entities, metadata))
 
         return results
@@ -322,6 +343,12 @@ class RasaYAMLReader(TrainingDataReader):
             )
 
     def _parse_multiline_example(self, item: Text, examples: Text) -> Iterator[Text]:
+        """
+        yd。功能：将换行符连接的字符串拆分成一条条的
+        :param item:
+        :param examples:
+        :return:
+        """
         for example in examples.splitlines():
             if not example.startswith(MULTILINE_TRAINING_EXAMPLE_LEADING_SYMBOL):
                 rasa.shared.utils.io.raise_warning(

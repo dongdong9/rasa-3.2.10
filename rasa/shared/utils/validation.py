@@ -119,7 +119,7 @@ class YamlValidationException(YamlException, ValueError):
 
 def validate_yaml_schema(yaml_file_content: Text, schema_path: Text) -> None:
     """
-    Validate yaml content.
+    Validate yaml content. #yd。用于判断yml文件的内容是否有效
 
     Args:
         yaml_file_content: the content of the yaml file to be validated
@@ -207,12 +207,18 @@ def validate_training_data(json_data: Dict[Text, Any], schema: Dict[Text, Any]) 
 def validate_training_data_format_version(
     yaml_file_content: Dict[Text, Any], filename: Optional[Text]
 ) -> bool:
+    """
+    yd。功能：判断yaml_file_content这个字典中的"version"字段的值，是否与当前rasa源码的版本匹配
+    :param yaml_file_content:
+    :param filename:
+    :return: 如果当前rasa源码可以处理filename文件，则返回True
+    """
     """Validates version on the training data content using `version` field
        and warns users if the file is not compatible with the current version of
        Rasa Open Source.
 
     Args:
-        yaml_file_content: Raw content of training data file as a dictionary.
+        yaml_file_content: Raw content of training data file as a dictionary. #yd。以dict格式保存的yml文件的内容
         filename: Name of the validated file.
 
     Returns:

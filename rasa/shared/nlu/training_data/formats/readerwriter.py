@@ -54,8 +54,14 @@ class TrainingDataReader(abc.ABC):
         self.filename: Text = ""
 
     def read(self, filename: Union[Text, Path], **kwargs: Any) -> "TrainingData":
+        """
+        yd。功能：解析nlu训练数据文本（例如data/nlu.yml），获取每个样本的意图类别和实体类别，将这些信息构造成一个TrainingData类对象。
+        :param filename:
+        :param kwargs:
+        :return:
+        """
         """Reads TrainingData from a file."""
-        self.filename = str(filename)
+        self.filename = str(filename) #yd。filename是nlu 数据的文件名，默认为'data\\nlu.yml'
         return self.reads(rasa.shared.utils.io.read_file(filename), **kwargs)
 
     @abc.abstractmethod

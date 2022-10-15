@@ -41,7 +41,7 @@ class TrainingData:
 
     def __init__(
         self,
-        training_examples: Optional[List[Message]] = None,
+        training_examples: Optional[List[Message]] = None, #yd。由Message类对象组成的list，Message类对象是一个nlu训练样本解析后的结果，包括意图、实体及类别
         entity_synonyms: Optional[Dict[Text, Text]] = None,
         regex_features: Optional[List[Dict[Text, Text]]] = None,
         lookup_tables: Optional[List[Dict[Text, Any]]] = None,
@@ -49,7 +49,7 @@ class TrainingData:
     ) -> None:
 
         if training_examples:
-            self.training_examples = self.sanitize_examples(training_examples)
+            self.training_examples = self.sanitize_examples(training_examples) #yd。将意图文本前后空格删除
         else:
             self.training_examples = []
         self.entity_synonyms = entity_synonyms or {}
@@ -126,7 +126,8 @@ class TrainingData:
 
     def merge(self, *others: Optional["TrainingData"]) -> "TrainingData":
         """Return merged instance of this data with other training data.
-
+        #yd。功能：将others这个TrainingData类实例集合中的每个对象合与当前这个TrainingData对象合并，
+                 用合并后的结果创建一个新的TrainingData类对象。
         Args:
             others: other training data instances to merge this one with
 
@@ -329,6 +330,7 @@ class TrainingData:
 
     def _fill_response_phrases(self) -> None:
         """Set response phrase for all examples by looking up NLG stories."""
+        #yd。功能：通过查找NLG stories来设置所有examples的回复短语
         for example in self.training_examples:
             # if intent_response_key is None, that means the corresponding intent is
             # not a retrieval intent and hence no response text needs to be fetched.

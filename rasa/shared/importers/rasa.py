@@ -79,7 +79,8 @@ class RasaFileImporter(TrainingDataImporter):
 
     def get_nlu_data(self, language: Optional[Text] = "en") -> TrainingData:
         """
-        yd。读取self._nlu_files（默认为".\\data\\nlu.yml"）所对应的内容
+        yd。功能：读取self._nlu_files（例如['data\\nlu.yml']）所对应的文件，解析文件中每个句子的意图和实体，
+            用解析结果构建TrainingData类对象保存在training_data_sets中，最后将training_data_sets中的TrainingData类对象合并成一个。
         :param language:
         :return:
         """
