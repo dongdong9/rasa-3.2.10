@@ -103,12 +103,12 @@ def update_similarity_type(config: Dict[Text, Any]) -> Dict[Text, Any]:
 
 
 def align_token_features(
-    list_of_tokens: List[List["Token"]],
-    in_token_features: np.ndarray,
+    list_of_tokens: List[List["Token"]], #yd。表示当前batch中每个样本的文本经过jieba分词后得到的Token类对象列表
+    in_token_features: np.ndarray,#yd。由当前batch每个样本去掉首尾CLS和SEP后剩余字级别的token的embedding组成
     shape: Optional[Tuple] = None,
 ) -> np.ndarray:
     """Align token features to match tokens.
-
+    #yd。功能：由字级别的embedding得到词级别的embedding，如果一个词是由多个字组成，则将这多个字的embedding取平均，得到对应词的embedding。最后返回词级别的token embedding
     ConveRTFeaturizer and LanguageModelFeaturizer might split up tokens into sub-tokens.
     We need to take the mean of the sub-token vectors and take that as token vector.
 
@@ -118,7 +118,7 @@ def align_token_features(
         shape: shape of feature matrix
 
     Returns:
-        Token features.
+        Token features. #yd。返回词级别的embedding
     """
     if shape is None:
         shape = in_token_features.shape
@@ -127,7 +127,7 @@ def align_token_features(
     for example_idx, example_tokens in enumerate(list_of_tokens):
         offset = 0
         for token_idx, token in enumerate(example_tokens):
-            number_sub_words = token.get(NUMBER_OF_SUB_TOKENS, 1)
+            number_sub_words = token.get(NUMBER_OF_SUB_TOKENS, 1) #yd。获取当前token中含有几个字符，例如"你好"中含有2个字符
 
             if number_sub_words > 1:
                 token_start_idx = token_idx + offset
@@ -136,7 +136,7 @@ def align_token_features(
                 mean_vec = np.mean(
                     in_token_features[example_idx][token_start_idx:token_end_idx],
                     axis=0,
-                )
+                ) #yd。功能：np.mean( axis=0)是对m*n的矩阵 行方向上进行压缩，得到1*n的矩阵
 
                 offset += number_sub_words - 1
 

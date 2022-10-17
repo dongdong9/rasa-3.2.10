@@ -1,7 +1,7 @@
 import rasa.shared.nlu.constants
 from rasa.shared.nlu.constants import ENTITY_ATTRIBUTE_CONFIDENCE
 
-BILOU_ENTITIES = "bilou_entities"
+BILOU_ENTITIES = "bilou_entities" #yd。对应的value是每个token的NER标签，例如['U-disease', 'O', 'O', 'O', 'O', 'O']
 BILOU_ENTITIES_ROLE = "bilou_entities_role"
 BILOU_ENTITIES_GROUP = "bilou_entities_group"
 
@@ -74,4 +74,4 @@ DEFAULT_TRANSFORMER_SIZE = 256
 
 FEATURIZER_CLASS_ALIAS = "alias"
 
-NO_LENGTH_RESTRICTION = -1
+NO_LENGTH_RESTRICTION = -1 #yd。表示没有长度限制

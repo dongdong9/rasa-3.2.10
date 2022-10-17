@@ -62,7 +62,7 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
             execution_context.node_name, config
         )
         self._load_model_metadata()
-        self._load_model_instance()
+        self._load_model_instance() #yd。功能：下载LanguageModelFeaturizer组件对应的模型，例如BertTokenier分词模型和Bert词向量表示模型
 
     @staticmethod
     def get_default_config() -> Dict[Text, Any]:
@@ -149,7 +149,7 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
 
         self.tokenizer = model_tokenizer_dict[self.model_name].from_pretrained(
             self.model_weights, cache_dir=self.cache_dir
-        )
+        ) #yd。加载指定的分词器（例如BertTokenizer）
         self.model = model_class_dict[self.model_name].from_pretrained(  # type: ignore[no-untyped-call] # noqa: E501
             self.model_weights, cache_dir=self.cache_dir
         )
@@ -164,15 +164,17 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
 
     def _lm_tokenize(self, text: Text) -> Tuple[List[int], List[Text]]:
         """Passes the text through the tokenizer of the language model.
-
+            #yd。lm_tokenize即language_model_tokenize，用于对text中的每个字符进行编码，得到每个字符的id
         Args:
             text: Text to be tokenized.
-
+                  #yd。即要被分词的文本，例如'你好'
         Returns: List of token ids and token strings.
+                 split_token_ids #由text中每个字符的token_id组成的list，例如[872, 1962]
+                 split_token_strings #有token_id得到的字符组成的list，例如['你', '好']
         """
-        split_token_ids = self.tokenizer.encode(text, add_special_tokens=False)
+        split_token_ids = self.tokenizer.encode(text, add_special_tokens=False) #yd。对text进行编码，得到每个字符的id，组成split_token_ids
 
-        split_token_strings = self.tokenizer.convert_ids_to_tokens(split_token_ids)
+        split_token_strings = self.tokenizer.convert_ids_to_tokens(split_token_ids) #yd。将split_token_ids转换为字符
 
         return split_token_ids, split_token_strings
 
@@ -180,7 +182,7 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
         self, token_ids: List[List[int]]
     ) -> List[List[int]]:
         """Adds the language and model-specific tokens used during training.
-
+           #yd。根据self.model_name给每个batch的token_ids这个list首尾加上特殊token id。如果self.model_name是bert，则给token_ids这个list首尾加上CLS和SEP标识
         Args:
             token_ids: List of token ids for each example in the batch.
 
@@ -200,7 +202,7 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
         self, split_token_ids: List[int], token_strings: List[Text]
     ) -> Tuple[List[int], List[Text]]:
         """Cleans up special chars added by tokenizers of language models.
-
+        #yd。功能：很多语言模型会在一些词的前面或后面加上特殊字符，这个方法就是为了清除这些特殊字符
         Many language models add a special char in front/back of (some) words. We clean
         up those chars as they are not
         needed once the features are already computed.
@@ -221,10 +223,10 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
         self, sequence_embeddings: np.ndarray
     ) -> Tuple[np.ndarray, np.ndarray]:
         """Computes sentence and sequence level representations for relevant tokens.
-
+        #yd。取每个样本CLS token对应的embedding作为句子embedding，得到sentence_embeddings。用去掉首尾CLS和SEP后剩余token的embedding组成post_processed_sequence_embeddings
         Args:
             sequence_embeddings: Sequence level dense features received as output from
-            language model.
+            language model. #yd。表示当前batch中，每个样本的unpadding token的embedding。
 
         Returns: Sentence and sequence level representations.
         """
@@ -239,7 +241,7 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
             (
                 example_sentence_embedding,
                 example_post_processed_embedding,
-            ) = model_embeddings_post_processors[self.model_name](example_embedding)
+            ) = model_embeddings_post_processors[self.model_name](example_embedding)##yd。将CLS这个token对应的embedding当做是sentence_embedding。post_processed_embedding是将首尾的CLS和SEP的embedding移除后剩余的token的embedding
 
             sentence_embeddings.append(example_sentence_embedding)
             post_processed_sequence_embeddings.append(example_post_processed_embedding)
@@ -252,6 +254,13 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
     def _tokenize_example(
         self, message: Message, attribute: Text
     ) -> Tuple[List[Token], List[int]]:
+        """
+        yd。功能：对message中每个词用BertTokenizer进行编码，得到每个字符的token_id，这些token_id组成token_ids_out；
+                 tokens_out是由Token类对象组成的list，保存着每个词的各项属性
+        :param message:
+        :param attribute:
+        :return:tokens_out 是由Token类对象组成的List； token_ids_out是当前message中每个词用BertTokenizer进行编码后得到的每个字的token_id组成的list
+        """
         """Tokenizes a single message example.
 
         Many language models add a special char in front of (some) words and split
@@ -268,14 +277,14 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
         Returns: List of token strings and token ids for the corresponding
                 attribute of the message.
         """
-        tokens_in = message.get(TOKENS_NAMES[attribute])
+        tokens_in = message.get(TOKENS_NAMES[attribute]) #yd。获取当前Message实例中的分词结果，即Token类实例组成的list
         tokens_out = []
 
         token_ids_out = []
 
-        for token in tokens_in:
+        for token in tokens_in: #yd。这里的tokens_in进行遍历，token是一个Token类对象，保存着一个词的属性
             # use lm specific tokenizer to further tokenize the text
-            split_token_ids, split_token_strings = self._lm_tokenize(token.text)
+            split_token_ids, split_token_strings = self._lm_tokenize(token.text)#yd。即language_model_tokenize，用于对text中的字符进行编码，得到每个字符的id
 
             if not split_token_ids:
                 # fix the situation that `token.text` only contains whitespace or other
@@ -286,7 +295,7 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
 
             (split_token_ids, split_token_strings) = self._lm_specific_token_cleanup(
                 split_token_ids, split_token_strings
-            )
+            )#yd。很多语言模型会在一些词的前面或后面加上特殊字符，这个方法就是为了清除这些特殊字符
 
             token_ids_out += split_token_ids
 
@@ -300,7 +309,7 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
         self, batch_examples: List[Message], attribute: Text
     ) -> Tuple[List[List[Token]], List[List[int]]]:
         """Computes token ids and token strings for each example in batch.
-
+           #yd。为当前batch中每个example计算example_token_ids和example_tokens，token_id是字符id。 example_tokens是由Token类对象组成的list。
         A token id is the id of that token in the vocabulary of the language model.
 
         Args:
@@ -313,7 +322,7 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
         """
         batch_token_ids = []
         batch_tokens = []
-        for example in batch_examples:
+        for example in batch_examples: #yd。每个example都是一个Message类对象
 
             example_tokens, example_token_ids = self._tokenize_example(
                 example, attribute
@@ -327,7 +336,7 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
     def _compute_attention_mask(
         actual_sequence_lengths: List[int], max_input_sequence_length: int
     ) -> np.ndarray:
-        """Computes a mask for padding tokens.
+        """Computes a mask for padding tokens. #yd。功能：获取attention_mask，每个样本中存在token的位置赋1，不存在token的位置赋0，即padding的位置赋0.
 
         This mask will be used by the language model so that it does not attend to
         padding tokens.
@@ -355,7 +364,7 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
             ) + [0] * (
                 max_input_sequence_length
                 - min(actual_sequence_length, max_input_sequence_length)
-            )
+            ) #yd。针对存在token的位置，赋1，不存在token的位置赋0，即padding的位置都赋0
             attention_mask.append(padded_sequence)
 
         attention_mask = np.array(attention_mask).astype(np.float32)
@@ -365,7 +374,7 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
         self, batch_token_ids: List[List[int]]
     ) -> Tuple[List[int], int]:
         """Extracts the sequence length for each example and maximum sequence length.
-
+        #yd。获取当前batch中每个样本的实际长度，和当前batch的最大序列长度
         Args:
             batch_token_ids: List of token ids for each example in the batch.
 
@@ -375,11 +384,11 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
             maximum sequence length that the model can handle.
         """
         # Compute max length across examples
-        max_input_sequence_length = 0
-        actual_sequence_lengths = []
+        max_input_sequence_length = 0 #yd。记录当前batch中样本的最大长度
+        actual_sequence_lengths = [] #yd。获取当前batch中每个样本的实际长度，保存在列表中
 
         for example_token_ids in batch_token_ids:
-            sequence_length = len(example_token_ids)
+            sequence_length = len(example_token_ids) #yd。获取当前样本的实际长度
             actual_sequence_lengths.append(sequence_length)
             max_input_sequence_length = max(
                 max_input_sequence_length, len(example_token_ids)
@@ -398,7 +407,7 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
         self, batch_token_ids: List[List[int]], max_sequence_length_model: int
     ) -> List[List[int]]:
         """Adds padding so that all examples in the batch are of the same length.
-
+            #yd。功能：对当前batch的每个样本进行padding操作，padding至当前batch中最长样本的长度。
         Args:
             batch_token_ids: Batch of examples where each example is a non-padded list
             of token ids.
@@ -431,14 +440,14 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
     def _extract_nonpadded_embeddings(
         embeddings: np.ndarray, actual_sequence_lengths: List[int]
     ) -> np.ndarray:
-        """Extracts embeddings for actual tokens.
+        """Extracts embeddings for actual tokens. #yd。获取当前batch中，每个样本的unpadding token的embedding
 
         Use pre-computed non-padded lengths of each example to extract embeddings
         for non-padding tokens.
 
         Args:
-            embeddings: sequence level representations for each example of the batch.
-            actual_sequence_lengths: non-padded lengths of each example of the batch.
+            embeddings: sequence level representations for each example of the batch.#yd。通过Bert模型得到当前batch中每个样本中所有token的embedding，即batch_sequence_length，它的shape为(batch_size, cur_batch_max_seq_length, embedding_size)，例如(26,32,768)
+            actual_sequence_lengths: non-padded lengths of each example of the batch. #yd。表示当前batch中每个样本的实际长度。
 
         Returns:
             Sequence level embeddings for only non-padding tokens of the batch.
@@ -454,12 +463,12 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
         self, batch_attention_mask: np.ndarray, padded_token_ids: List[List[int]]
     ) -> np.ndarray:
         """Feeds the padded batch to the language model.
-
+        #yd。功能：通过Bert模型得到当前batch中每个样本中所有token的embedding，即batch_hidden_states，它的shape为(batch_size, cur_batch_max_seq_length, hidden_size)，例如(26,32,768)
         Args:
             batch_attention_mask: Mask of 0s and 1s which indicate whether the token
-            is a padding token or not.
+            is a padding token or not. #yd。当前batch的attention_mask，是由0和1组成，0表示该位置是被padding的词，1表示该位置本身有词，不需要padding
             padded_token_ids: Batch of token ids for each example. The batch is padded
-            and hence can be fed at once.
+            and hence can be fed at once. #yd。表示当前batch中每个样本的实际长度。
 
         Returns:
             Sequence level representations from the language model.
@@ -467,10 +476,10 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
         model_outputs = self.model(
             tf.convert_to_tensor(padded_token_ids),
             attention_mask=tf.convert_to_tensor(batch_attention_mask),
-        )
+        ) #yd。功能：通过模型，得到模型的输出结果
 
-        # sequence hidden states is always the first output from all models
-        sequence_hidden_states = model_outputs[0]
+        # sequence hidden states is always the first output from all models #yd。取模型最后一层的输出作为sequence_hidden_states
+        sequence_hidden_states = model_outputs[0] #yd。sequence_hidden_states的shape为(batch_size, cur_batch_max_seq_length, embedding_size)，例如(26,32,768)
 
         sequence_hidden_states = sequence_hidden_states.numpy()
         return sequence_hidden_states
@@ -482,7 +491,7 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
         attribute: Text,
         inference_mode: bool = False,
     ) -> None:
-        """Validates sequence length.
+        """Validates sequence length. #yd。检查每个样本的序列长度是否小于模型能够处理的最大长度。
 
         Checks if sequence lengths of inputs are less than
         the max sequence length the model can handle.
@@ -522,13 +531,13 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
 
     def _add_extra_padding(
         self, sequence_embeddings: np.ndarray, actual_sequence_lengths: List[int]
-    ) -> np.ndarray:
+    ) -> np.ndarray: #yd。这个函数的功能可以不用管。功能：将传入的sequence_embeddings放在一个新的np.array变量中。
         """Adds extra zero padding to match the original sequence length.
 
         This is only done if the input was truncated during the batch
         preparation of input for the model.
         Args:
-            sequence_embeddings: Embeddings returned from the model
+            sequence_embeddings: Embeddings returned from the model #yd。由当前batch中每个样本去掉首尾CLS和SEP后剩余token的embedding组成
             actual_sequence_lengths: original sequence length of all inputs
 
         Returns:
@@ -568,6 +577,8 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
         attribute: Text,
         inference_mode: bool = False,
     ) -> Tuple[np.ndarray, np.ndarray]:
+        # yd。功能：①、得到当前batch中每个样本的CLS token对应的embedding，保存在sentence_embeddings中，其shape为(batch_size, embedding_size)。
+        #         ②、得到每个样本文本分词结果中每个词的embedding（每个词的embedding是将涉及到的字的embedding取平均），将这些embedding保存在sequence_final_embeddings中
         """Computes dense features of each example in the batch.
 
         We first add the special tokens corresponding to each language model. Next, we
@@ -590,44 +601,44 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
         # Let's first add tokenizer specific special tokens to all examples
         batch_token_ids_augmented = self._add_lm_specific_special_tokens(
             batch_token_ids
-        )
+        )#yd。根据self.model_name给每个batch的token_ids这个list首尾加上特殊token id。如果self.model_name是bert，则给token_ids这个list首尾加上CLS和SEP标识
 
         # Compute sequence lengths for all examples
         (
             actual_sequence_lengths,
             max_input_sequence_length,
-        ) = self._extract_sequence_lengths(batch_token_ids_augmented)
+        ) = self._extract_sequence_lengths(batch_token_ids_augmented) #yd。获取当前batch中每个样本的实际长度，和当前batch的最大序列长度
 
         # Validate that all sequences can be processed based on their sequence
         # lengths and the maximum sequence length the model can handle
         self._validate_sequence_lengths(
             actual_sequence_lengths, batch_examples, attribute, inference_mode
-        )
+        )#yd。检查每个样本的序列长度是否小于模型能够处理的最大长度。
 
         # Add padding so that whole batch can be fed to the model
         padded_token_ids = self._add_padding_to_batch(
             batch_token_ids_augmented, max_input_sequence_length
-        )
+        )#yd。对当前batch的每个样本进行padding操作，padding至当前batch中最长样本的长度。
 
         # Compute attention mask based on actual_sequence_length
         batch_attention_mask = self._compute_attention_mask(
             actual_sequence_lengths, max_input_sequence_length
-        )
+        )#yd。功能：获取batch_attention_mask，每个样本中存在token的位置赋1，不存在token的位置赋0，即padding的位置赋0.
 
         # Get token level features from the model
         sequence_hidden_states = self._compute_batch_sequence_features(
             batch_attention_mask, padded_token_ids
-        )
+        )#yd。功能：通过Bert模型得到当前batch中每个样本的hidden_states，即batch_hidden_states，它的shape为(batch_size, cur_batch_max_seq_length, embedding_size)，例如(26,32,768)
 
         # Extract features for only non-padding tokens
         sequence_nonpadded_embeddings = self._extract_nonpadded_embeddings(
             sequence_hidden_states, actual_sequence_lengths
-        )
+        )#yd。获取当前batch中，每个样本的unpadding token的embedding
 
         # Extract sentence level and post-processed features
         (
-            sentence_embeddings,
-            sequence_embeddings,
+            sentence_embeddings,#yd。取每个样本CLS token对应的embedding作为句子embedding，得到sentence_embeddings。
+            sequence_embeddings,#yd。用去掉首尾CLS和SEP后剩余token的embedding组成post_processed_sequence_embeddings
         ) = self._post_process_sequence_embeddings(sequence_nonpadded_embeddings)
 
         # Pad zeros for examples which were truncated in inference mode.
@@ -635,19 +646,19 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
         # extracted so that they are not affected
         sequence_embeddings = self._add_extra_padding(
             sequence_embeddings, actual_sequence_lengths
-        )
+        )#yd。功能：将传入的sequence_embeddings放在一个新的np.array变量中。这个方法可以不用管。
 
         # shape of matrix for all sequence embeddings
-        batch_dim = len(sequence_embeddings)
-        seq_dim = max(e.shape[0] for e in sequence_embeddings)
-        feature_dim = sequence_embeddings[0].shape[1]
+        batch_dim = len(sequence_embeddings) #yd。即batch_size
+        seq_dim = max(e.shape[0] for e in sequence_embeddings) #yd。即当前batch中最长序列的长度（不包括首尾的CLS和SEP）
+        feature_dim = sequence_embeddings[0].shape[1] #yd。即embedding_size，例如768
         shape = (batch_dim, seq_dim, feature_dim)
 
         # align features with tokens so that we have just one vector per token
         # (don't include sub-tokens)
         sequence_embeddings = train_utils.align_token_features(
             batch_tokens, sequence_embeddings, shape
-        )
+        )#yd。功能：由字级别的embedding得到词级别的embedding，如果一个词是由多个字组成，则将这多个字的embedding取平均，得到对应词的embedding。最后返回词级别的token embedding
 
         # sequence_embeddings is a padded numpy array
         # remove the padding, keep just the non-zero vectors
@@ -664,6 +675,14 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
         attribute: Text,
         inference_mode: bool = False,
     ) -> List[Dict[Text, Any]]:
+        """
+        yd。功能：得到当前batch中每个example的sequence_feature(shape为[词级别的token_count, embedding_size])
+        和sentence_feature(shape为[1,768])，将这两种feature作为doc这个字典的value，返回doc组成是list
+        :param batch_examples:
+        :param attribute:
+        :param inference_mode:
+        :return:
+        """
         """Computes language model docs for all examples in the batch.
 
         Args:
@@ -679,21 +698,23 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
         """
         batch_tokens, batch_token_ids = self._get_token_ids_for_batch(
             batch_examples, attribute
-        )
+        ) #yd。batch_tokens当前batch的每个example所属的Token类对象组成的Table；batch_token_ids当前batch中每个example中的文本字符的token_id组成的Table
 
         (
             batch_sentence_features,
             batch_sequence_features,
         ) = self._get_model_features_for_batch(
             batch_token_ids, batch_tokens, batch_examples, attribute, inference_mode
-        )
+        )# yd。功能：①、得到当前batch中每个样本的CLS token对应的embedding，保存在batch_sentence_features中，其shape为(batch_size, embedding_size)
+        #          ②、得到每个样本文本分词结果中每个词的embedding（每个词的embedding是将涉及到的字的embedding取平均），将这些embedding保存在sequence_final_embeddings中
+
 
         # A doc consists of
         # {'sequence_features': ..., 'sentence_features': ...}
         batch_docs = []
         for index in range(len(batch_examples)):
             doc = {
-                SEQUENCE_FEATURES: batch_sequence_features[index],
+                SEQUENCE_FEATURES: batch_sequence_features[index], #yd。每个batch_sequence_features[index]的shape为(词级别的token count，embedding_size)
                 SENTENCE_FEATURES: np.reshape(batch_sentence_features[index], (1, -1)),
             }
             batch_docs.append(doc)
@@ -701,6 +722,11 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
         return batch_docs
 
     def process_training_data(self, training_data: TrainingData) -> TrainingData:
+        """
+        yd。功能
+        :param training_data:
+        :return:
+        """
         """Computes tokens and dense features for each message in training data.
 
         Args:
@@ -713,7 +739,7 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
 
             non_empty_examples = list(
                 filter(lambda x: x.get(attribute), training_data.training_examples)
-            )
+            ) #yd。从training_data.training_examples的所有Message类对象的data字典中，选择attribute字段不为空的Message类对象，并将选择的结果保存在non_empty_examples中
 
             batch_start_index = 0
 
@@ -722,11 +748,13 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
                 batch_end_index = min(
                     batch_start_index + batch_size, len(non_empty_examples)
                 )
-                # Collect batch examples
+                # Collect batch examples #yd。获取一个batch对应的examples
                 batch_messages = non_empty_examples[batch_start_index:batch_end_index]
 
                 # Construct a doc with relevant features
                 # extracted(tokens, dense_features)
+                #yd。功能：得到当前batch中每个example的sequence_feature和sentence_feature，将这两种feature作为doc这个字典的value，
+                # 返回doc组成是list
                 batch_docs = self._get_docs_for_batch(batch_messages, attribute)
 
                 for index, ex in enumerate(batch_messages):
@@ -761,9 +789,10 @@ class LanguageModelFeaturizer(DenseFeaturizer, GraphComponent):
         self, doc: Dict[Text, Any], message: Message, attribute: Text = TEXT
     ) -> None:
         """Adds the precomputed word vectors to the messages features."""
-        sequence_features = doc[SEQUENCE_FEATURES]
-        sentence_features = doc[SENTENCE_FEATURES]
-
+        sequence_features = doc[SEQUENCE_FEATURES]#yd。sequence_feature(shape为[词级别的token_count, embedding_size])
+        sentence_features = doc[SENTENCE_FEATURES]#yd。sentence_feature(shape为[1,embedding_size])
+        #yd。将sequence_feature(shape为[词级别的token_count, embedding_size])和sentence_feature(shape为[1, embedding_size])
+        #    都加入到Message类对象的self.features这个list中。
         self.add_features_to_message(
             sequence=sequence_features,
             sentence=sentence_features,

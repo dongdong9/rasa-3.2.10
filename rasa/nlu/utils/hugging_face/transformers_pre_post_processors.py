@@ -29,7 +29,7 @@ def cleanup_tokens(
 
 
 def bert_tokens_pre_processor(token_ids: List[int]) -> List[int]:
-    """Add BERT style special tokens(CLS and SEP).
+    """Add BERT style special tokens(CLS and SEP). #yd。在token_ids这个list的首尾分别加上CLS和SEP符号对应的ID
 
     Args:
         token_ids: List of token ids without any special tokens.
@@ -117,7 +117,7 @@ def xlm_tokens_pre_processor(token_ids: List[int]) -> List[int]:
 def bert_embeddings_post_processor(
     sequence_embeddings: np.ndarray,
 ) -> Tuple[np.ndarray, np.ndarray]:
-    """Post-process embeddings from BERT.
+    """Post-process embeddings from BERT. #yd。将CLS这个token对应的embedding当做是sentence_embedding。post_processed_embedding是将首尾的CLS和SEP的embedding移除后剩余的token的embedding
 
     by removing CLS and SEP embeddings and returning CLS token embedding as
     sentence representation.

@@ -47,7 +47,7 @@ class Featurizer(Generic[FeatureType], ABC):
         message: Message,
     ) -> None:
         """Adds sequence and sentence features for the attribute to the given message.
-
+        #yd。功能：将sentence_feature和sequence_feature分别加入到Message类对象的self.features这个list中
         Args:
           sequence: sequence feature matrix
           sentence: sentence feature matrix
