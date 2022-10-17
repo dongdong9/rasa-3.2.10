@@ -57,3 +57,10 @@ rasa/rasa_demo_Chapter02/log
 rasa/rasa_demo_Chapter02/.gitignore
 
 rasa/nlu/utils/hugging_face/__pycache__/
+
+#暂时不管
+rasa/engine/graph.py
+rasa/engine/runner/dask.py
+rasa/engine/training/graph_trainer.py
+rasa/model_training.py
+
