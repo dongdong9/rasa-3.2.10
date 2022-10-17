@@ -120,7 +120,13 @@ class Tokenizer(GraphComponent, abc.ABC):
         ...
 
     def process_training_data(self, training_data: TrainingData) -> TrainingData:
-        """Tokenize all training data.""" #yd。对每个Message对象(即example)用结巴进行分词，并将分词结果保存在example.data这个字典中
+        """
+        yd。功能：对training_data.training_examples中的每个Message对象(即example)用结巴进行分词，
+                并将分词结果保存在example.data这个字典中。最后将training_data返回。
+        :param training_data:
+        :return:
+        """
+        """Tokenize all training data."""
         for example in training_data.training_examples:
             for attribute in MESSAGE_ATTRIBUTES:
                 if (
