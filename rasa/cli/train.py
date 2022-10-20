@@ -189,7 +189,7 @@ def run_nlu_training(args: argparse.Namespace) -> Optional[Text]:
     config = _get_valid_config(args.config, CONFIG_MANDATORY_KEYS_NLU) #yd。获取有效的config文件路径，例如config.yml
     nlu_data = rasa.cli.utils.get_validated_path(
         args.nlu, "nlu", DEFAULT_DATA_PATH, none_is_valid=True
-    ) #yd。判断配置的args.nlu或者默认值"nlu"是否为有效的nlu data 路径
+    ) #yd。判断配置的args.nlu的值（例如"data"）或者默认值"nlu"是否为有效的nlu data 路径
 
     if args.domain:
         args.domain = rasa.cli.utils.get_validated_path(

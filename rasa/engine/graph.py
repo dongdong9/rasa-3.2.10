@@ -139,25 +139,32 @@ class GraphSchema:
         return [node_name for node_name, node in self.nodes.items() if node.is_target]
 
     def minimal_graph_schema(self, targets: Optional[List[Text]] = None) -> GraphSchema:
+        """
+        yd。功能：①、获取self.target_names中每个node_name所依赖的节点名称，将所有依赖的节点名称保存在required这个list中
+                ②、获取self.nodes保存的key-value中，key出现在required这个list中的key-value对。利用这部分被依赖的节点组成
+                   新的GraphSchema类对象，即精简self.nodes中的key-value对。
+        :param targets:
+        :return:
+        """
         """Returns a new schema where all nodes are a descendant of a target."""
-        #yd。返回一个新的GraphSchema，在新的schema里面，所有的nodes都是一个target的后代。没有理解？？？
+
         dependencies = self._all_dependencies_schema(
             targets if targets else self.target_names
-        )
+        ) #yd。返回targets中每个node_name所依赖的节点名称，并将这些节点名称合并保存在required这个list中
 
         return GraphSchema(
             {
                 node_name: node
                 for node_name, node in self.nodes.items()
                 if node_name in dependencies
-            }
+            } #yd。获取self.nodes中node_name在dependencies这个list中的部分，node_name到node之间的映射字典
         )
 
     def _all_dependencies_schema(self, targets: List[Text]) -> List[Text]:
         """
-        yd。不知道这个是干啥
-        :param targets:
-        :return:
+        yd。功能：递归获取targets中每个node_name所依赖的节点名称，将这些名称保存在required这个list中。
+        :param targets: 由node_name组成的list
+        :return: 返回所依赖的全部节点名称
         """
         required = []
         for target in targets:
@@ -394,7 +401,7 @@ class GraphNode:
             self._load_component()
 
     def _load_component(self, **kwargs: Any) -> None:
-        print("**** yd。开始执行_load_component(self, **kwargs: Any)方法\n")
+        print(f"\n**** yd。开始执行_load_component(self, **kwargs: Any)方法，Node '{self._node_name}' loading ")
         logger.debug(
             f"Node '{self._node_name}' loading "
             f"'{self._component_class.__name__}.{self._constructor_name}' "
@@ -402,7 +409,7 @@ class GraphNode:
         )
 
         constructor = getattr(self._component_class, self._constructor_name)
-        try:
+        try: #yd。利用self._constructor_name对应的方法生成FingerprintComponent类对象
             self._component: GraphComponent = constructor(  # type: ignore[no-redef]
                 config=self._component_config,
                 model_storage=self._model_storage,
@@ -424,7 +431,7 @@ class GraphNode:
                     f"Error initializing graph component for node {self._node_name}."
                 )
                 raise
-        print("**** yd。完成执行_load_component(self, **kwargs: Any)方法\n")
+        print(f"**** yd。完成执行_load_component(self, **kwargs: Any)方法，Node '{self._node_name}' loading 完成 \n")
 
     def _get_resource(self, kwargs: Dict[Text, Any]) -> Resource:
         if "resource" in kwargs:
@@ -443,7 +450,7 @@ class GraphNode:
 
     def __call__(
         self, *inputs_from_previous_nodes: Tuple[Text, Any]
-    ) -> Tuple[Text, Any]:
+    ) -> Tuple[Text, Any]: #yd。当a = GraphNode()，执行a()时，调用当前的__call__()方法
         """Calls the `GraphComponent` run method when the node executes in the graph.
 
         Args:
@@ -453,7 +460,7 @@ class GraphNode:
         Returns:
             The node name and its output.
         """
-        received_inputs: Dict[Text, Any] = dict(inputs_from_previous_nodes)
+        received_inputs: Dict[Text, Any] = dict(inputs_from_previous_nodes) #yd。强转为dict格式，得到received_input，这个dict保存着
 
         kwargs = {}
         for input_name, input_node in self._inputs.items():
@@ -478,7 +485,7 @@ class GraphNode:
         )
 
         try:
-            output = self._fn(self._component, **run_kwargs) #yd。训练各个component，比如'RegexFeaturizer'和'LexicalSyntacticFeaturizer'等等
+            output = self._fn(self._component, **run_kwargs) #yd。执行self._component类的self._fn_name对应的方法，如LanguageModelFeaturizer类的process_training_data方法
         except InvalidConfigException:
             # Pass through somewhat expected exception to allow more fine granular
             # handling of exceptions.
@@ -518,6 +525,11 @@ class GraphNode:
                 ) from e
 
     def _run_before_hooks(self, received_inputs: Dict[Text, Any]) -> List[Dict]:
+        """
+        yd。功能：
+        :param received_inputs:
+        :return:
+        """
         input_hook_outputs = []
         for hook in self._hooks:
             try:

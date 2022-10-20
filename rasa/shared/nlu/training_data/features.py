@@ -59,7 +59,7 @@ class Features:
 
     def is_sparse(self) -> bool:
         """Checks if features are sparse or not.
-
+        #yd。功能：判断self.features是否为一个sparse matrix，在sparse matrix大多使用在含有很多0的矩阵中，它只保存非0矩阵。
         Returns:
             True, if features are sparse, false otherwise.
         """
@@ -67,7 +67,7 @@ class Features:
 
     def is_dense(self) -> bool:
         """Checks if features are dense or not.
-
+        #yd。功能：检查self.features是否为sparse matrix类型
         Returns:
             True, if features are dense, false otherwise.
         """

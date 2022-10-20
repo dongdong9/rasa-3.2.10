@@ -480,6 +480,13 @@ class RasaModelData:
     def add_features(
         self, key: Text, sub_key: Text, features: Optional[List[FeatureArray]]
     ) -> None:
+        """
+        yd。功能：
+        :param key:
+        :param sub_key:
+        :param features:
+        :return:
+        """
         """Add list of features to data under specified key.
 
         Should update number of examples.
@@ -669,7 +676,7 @@ class RasaModelData:
         Returns:
             The shuffled data.
         """
-        ids = np.random.permutation(self.num_examples)
+        ids = np.random.permutation(self.num_examples) #yd。产生一堆小于self.num_examples（例如26）随机数列表，例如[18 19  8 24 10 13 17  9 14 11 15 23 16  0  5  3 21  2 12 25  1 22  6  4,  7 20]
         return self._data_for_ids(data, ids)
 
     def balanced_data(self, data: Data, batch_size: int, shuffle: bool) -> Data:

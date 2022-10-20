@@ -31,8 +31,18 @@ def featurize_training_examples(
     featurizers: Optional[List[Text]] = None,
     bilou_tagging: bool = False,
 ) -> Tuple[List[Dict[Text, List["Features"]]], Dict[Text, Dict[Text, List[int]]]]:
+    """
+    #yd。功能：①、将training_data转换成由attribute到features映射字典组成的list中；
+             ②、获取sparse matrix类型的features对应的attribute和sparse feature size。
+    :param training_examples:
+    :param attributes:
+    :param entity_tag_specs:
+    :param featurizers:
+    :param bilou_tagging:
+    :return:
+    """
     """Converts training data into a list of attribute to features.
-
+    
     Possible attributes are, for example, INTENT, RESPONSE, TEXT, ACTION_TEXT,
     ACTION_NAME or ENTITIES.
     Also returns sparse feature sizes for each attribute. It could look like this:
@@ -49,12 +59,12 @@ def featurize_training_examples(
         A list of attribute to features.
         A dictionary of attribute to feature sizes.
     """
-    output = []
+    output = [] #yd。为每个Message类对象创建一个保存feature的字典，将字典保存在output这个list中
     if not entity_tag_specs:
         entity_tag_specs = []
 
     for example in training_examples:
-        attribute_to_features: Dict[Text, List["Features"]] = {}
+        attribute_to_features: Dict[Text, List["Features"]] = {} #yd。为每个Message对象创建一个attribute_to_features的字典
         for attribute in attributes:
             if attribute == ENTITIES:
                 attribute_to_features[attribute] = []
@@ -63,10 +73,10 @@ def featurize_training_examples(
                     attribute_to_features[attribute].append(
                         get_tag_ids(example, tag_spec, bilou_tagging)
                     )
-            elif attribute in example.data:
+            elif attribute in example.data: #yd。如果example.data这个字典中存在attribute值对应的key
                 attribute_to_features[attribute] = example.get_all_features(
                     attribute, featurizers
-                )
+                ) #yd。从example.data这个字典中，取出attribute对应的value，保存在attribute_to_features中
         output.append(attribute_to_features)
 
     sparse_feature_sizes = {}
@@ -75,7 +85,7 @@ def featurize_training_examples(
             featurized_example=output[0],
             training_example=training_examples[0],
             featurizers=featurizers,
-        )
+        )#yd。yd。功能：获取sparse matrix类型的features对应的attribute和sparse feature size。
     return output, sparse_feature_sizes
 
 
@@ -85,7 +95,7 @@ def _collect_sparse_feature_sizes(
     featurizers: Optional[List[Text]] = None,
 ) -> Dict[Text, Dict[Text, List[int]]]:
     """Collects sparse feature sizes for all attributes that have sparse features.
-
+    #yd。功能：获取sparse matrix类型的features对应的attribute和sparse feature size。
     Returns sparse feature sizes for each attribute. It could look like this:
     {TEXT: {FEATURE_TYPE_SEQUENCE: [16, 32], FEATURE_TYPE_SENTENCE: [16, 32]}}.
 
@@ -98,8 +108,8 @@ def _collect_sparse_feature_sizes(
         A dictionary of attribute to feature sizes.
     """
     sparse_feature_sizes = {}
-    sparse_attributes = []
-    for attribute, features in featurized_example.items():
+    sparse_attributes = [] #yd。获取sparse matrix类型的features对应的attribute
+    for attribute, features in featurized_example.items(): #yd。featurized_example保存的是attribute到features的映射字典
         if features and features[0].is_sparse():
             sparse_attributes.append(attribute)
     for attribute in sparse_attributes:
@@ -284,7 +294,7 @@ def convert_to_data_format(
 
     Args:
         features: a dictionary of attributes to a list of features for all
-            examples in the training data
+            examples in the training data。#yd。features是由dict组成的list，dict的可以使意图、文本、实体等属性名称，value是对应的特征。
         fake_features: Contains default feature values for attributes
         consider_dialogue_dimension: If set to false the dialogue dimension will be
             removed from the resulting sequence features.

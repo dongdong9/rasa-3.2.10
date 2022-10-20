@@ -57,10 +57,10 @@ class RasaDataGenerator(Sequence):
         """Update the data after every epoch."""
         raise NotImplementedError
 
-    def _shuffle_and_balance(self, batch_size: int) -> Data:
+    def _shuffle_and_balance(self, batch_size: int) -> Data: #yd。将传入的数据顺序打乱，并保障各类别的样本是平衡的
         data = self.model_data.data
 
-        if self.shuffle:
+        if self.shuffle: #yd。将data随机打乱顺序
             data = self.model_data.shuffled_data(data)
 
         if self.batch_strategy == BALANCED:

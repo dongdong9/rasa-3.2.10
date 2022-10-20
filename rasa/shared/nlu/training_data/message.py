@@ -330,13 +330,19 @@ class Message:
     def features_present(
         self, attribute: Text, featurizers: Optional[List[Text]] = None
     ) -> bool:
+        """
+        yd。功能：判断self.features这个list中，是否有符合条件的Features类对象
+        :param attribute:
+        :param featurizers:yd。用于指定Features类对象的成员变量origin的值是否在当前featurizers内
+        :return:
+        """
         """Checks if there are any features present for the attribute and featurizers.
 
         If no featurizers are provided, all available features will be considered.
 
         Args:
             attribute: Message attribute.
-            featurizers: Names of featurizers to consider.
+            featurizers: Names of featurizers to consider.yd。用于指定origin是否在当前featurizers内
 
         Returns:
             ``True``, if features are present, ``False`` otherwise.
@@ -362,34 +368,46 @@ class Message:
     def _filter_dense_features(
         self, attribute: Text, featurizers: List[Text]
     ) -> Tuple[List["Features"], List["Features"]]:
+        """
+        yd。功能：从self.features这个list中，选择不是sparse matrix类型，且符合条件的元素，分别保存在sentence_features和sequence_features中
+        :param attribute:
+        :param featurizers:用于指定origin是否在当前featurizers内
+        :return:
+        """
         sentence_features = [
             f
-            for f in self.features
+            for f in self.features #yd。这里的self.features是由Features类对象组成的list
             if f.attribute == attribute
-            and f.is_dense()
+            and f.is_dense()#yd。判断Features类对象的self.features成员变量是否为sparse matrix类型
             and f.type == FEATURE_TYPE_SENTENCE
             and (f.origin in featurizers or not featurizers)
-        ]
+        ] #yd。从self.features这个list中，选择类型为FEATURE_TYPE_SENTENCE的，且不是sparse matrix类型的元素，保存在sentence_features中
         sequence_features = [
             f
             for f in self.features
             if f.attribute == attribute
             and f.is_dense()
             and f.type == FEATURE_TYPE_SEQUENCE
-            and (f.origin in featurizers or not featurizers)
-        ]
+            and (f.origin in featurizers or not featurizers)#yd。如果featurizers不为空，则origin需要在featurizers内
+        ]#yd。从self.features这个list中，选择类型为FEATURE_TYPE_SEQUENCE的，且不是sparse matrix类型的元素，保存在sentence_features中
         return sequence_features, sentence_features
 
     def _filter_sparse_features(
         self, attribute: Text, featurizers: List[Text]
     ) -> Tuple[List["Features"], List["Features"]]:
+        """
+        yd。功能：从self.features这个list中，选择是sparse matrix类型，且符合条件的元素，分别保存在sentence_features和sequence_features中
+        :param attribute:
+        :param featurizers:用于指定origin是否在当前featurizers内
+        :return:
+        """
         sentence_features = [
             f
             for f in self.features
             if f.attribute == attribute
             and f.is_sparse()
             and f.type == FEATURE_TYPE_SENTENCE
-            and (f.origin in featurizers or not featurizers)
+            and (f.origin in featurizers or not featurizers) #yd。如果featurizers不为空，则origin需要在featurizers内
         ]
         sequence_features = [
             f

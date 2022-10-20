@@ -109,7 +109,7 @@ def build_tag_id_dict(
     training_data: "TrainingData", tag_name: Text = ENTITY_ATTRIBUTE_TYPE
 ) -> Optional[Dict[Text, int]]:
     """Create a mapping of unique tags to ids.
-
+    #yd。创建tag_name对应的类别标签与id的映射关系，如果是tag_name是entity，则得到的tag_id_dict为{'B-disease': 1, 'I-disease': 2, 'L-disease': 3, 'U-disease': 4, 'O': 0}
     Args:
         training_data: the training data
         tag_name: tag name of interest
@@ -144,7 +144,7 @@ def build_tag_id_dict(
 
 def apply_bilou_schema(training_data: "TrainingData") -> None:
     """Get a list of BILOU entity tags and set them on the given messages.
-
+    #yd。功能：给training_data的nlu_examples中每个Message类对象的data字段中添加bilou实体标签，例如{'bilou_entities':['U-disease', 'O', 'O', 'O', 'O', 'O']}
     Args:
         training_data: the training data
     """
@@ -154,11 +154,11 @@ def apply_bilou_schema(training_data: "TrainingData") -> None:
 
 def apply_bilou_schema_to_message(message: "Message") -> None:
     """Get a list of BILOU entity tags and set them on the given message.
-
+    #yd。bilou等同于BIOES，b代表begin(B)，i代表inside(I)，l代表last(E)，o代表非实体(O)，u代表unit单个实体(S)
     Args:
         message: the message
     """
-    entities = message.get(ENTITIES)
+    entities = message.get(ENTITIES) #yd。取出当前Message类对象中的实体列表，例如[(0, 2, 'disease')]
 
     if not entities:
         return
@@ -170,8 +170,8 @@ def apply_bilou_schema_to_message(message: "Message") -> None:
         (ENTITY_ATTRIBUTE_ROLE, BILOU_ENTITIES_ROLE),
         (ENTITY_ATTRIBUTE_GROUP, BILOU_ENTITIES_GROUP),
     ]:
-        entities = map_message_entities(message, attribute)
-        output = bilou_tags_from_offsets(tokens, entities)
+        entities = map_message_entities(message, attribute)#yd。取出当前Message类对象中的实体列表，例如[(0, 2, 'disease')]
+        output = bilou_tags_from_offsets(tokens, entities) #yd。功能：得到句子中每个词的BIOES标签类别，并将结果保存在output这个list中，如['U-disease', 'O', 'O', 'O', 'O', 'O']
         message.set(message_key, output)
 
 
@@ -206,11 +206,11 @@ def bilou_tags_from_offsets(
     tokens: List["Token"], entities: List[Tuple[int, int, Text]]
 ) -> List[Text]:
     """Creates BILOU tags for the given tokens and entities.
-
+    #yd。功能：得到句子中每个词的BIOES标签类别，并将结果保存在bilou这个list中，如['U-disease', 'O', 'O', 'O', 'O', 'O']
     Args:
         message: The message object.
-        tokens: The list of tokens.
-        entities: The list of start, end, and tag tuples.
+        tokens: The list of tokens. yd。表示当前Message类对象中的Token类对象组成的list。
+        entities: The list of start, end, and tag tuples.表示当前Message类对象中存在的实体列表，例如[(0, 2, 'disease')]
         missing: The tag for missing entities.
 
     Returns:
@@ -233,14 +233,14 @@ def _add_bilou_tags_to_entities(
     entities: List[Tuple[int, int, Text]],
     end_pos_to_token_idx: Dict[int, int],
     start_pos_to_token_idx: Dict[int, int],
-) -> None:
+) -> None: #yd。功能：得到句子中每个词的BIOES标签类别，并将结果保存在bilou这个list中，如['U-disease', 'O', 'O', 'O', 'O', 'O']
     for start_pos, end_pos, label in entities:
         start_token_idx = start_pos_to_token_idx.get(start_pos)
         end_token_idx = end_pos_to_token_idx.get(end_pos)
 
         # Only interested if the tokenization is correct
         if start_token_idx is not None and end_token_idx is not None:
-            if start_token_idx == end_token_idx:
+            if start_token_idx == end_token_idx: #yd。如果起始位置对应的token_index与结束位置的token_index相同，则表示该token是一个独立的实体，则该token的标签为"U" + 实体类别，例如"U -disease"
                 bilou[start_token_idx] = f"{UNIT}{label}"
             else:
                 bilou[start_token_idx] = f"{BEGINNING}{label}"

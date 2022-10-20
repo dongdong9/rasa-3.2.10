@@ -350,7 +350,7 @@ def create_common_callbacks(
     tensorboard_log_level: Optional[Text] = None,
     checkpoint_dir: Optional[Path] = None,
 ) -> List["Callback"]:
-    """Create common callbacks.
+    """Create common callbacks. #yd。创建一个由RasaTrainingLogger类对象组成的list
 
     The following callbacks are created:
     - RasaTrainingLogger callback

@@ -412,7 +412,7 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
         training_data: TrainingData, attribute: Text
     ) -> Dict[Text, int]:
         """Create label_id dictionary."""
-
+        #yd。功能：获取training_data中所有的意图类别，得到意图类别与idx的映射关系，例如{'goodbye': 0, 'greet': 1, 'medical_department': 2, 'medical_hospital': 3, 'medicine': 4}
         distinct_label_ids = {
             example.get(attribute) for example in training_data.intent_examples
         } - {None}
@@ -422,20 +422,20 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
 
     @staticmethod
     def _invert_mapping(mapping: Dict) -> Dict:
-        return {value: key for key, value in mapping.items()}
+        return {value: key for key, value in mapping.items()} #yd。将字典中的key-value对进行交换
 
     def _create_entity_tag_specs(
         self, training_data: TrainingData
     ) -> List[EntityTagSpec]:
         """Create entity tag specifications with their respective tag id mappings."""
-
+        #yd。功能：为POSSIBLE_TAGS中的各种tag_name分别创建一个EntityTagSpec类对象，这个类对象保存的是实体tag类型与id的映射关系
         _tag_specs = []
 
         for tag_name in POSSIBLE_TAGS:
             if self.component_config[BILOU_FLAG]:
                 tag_id_index_mapping = bilou_utils.build_tag_id_dict(
                     training_data, tag_name
-                )
+                )#yd。创建与tag_name对应的类别与id的映射关系，如果tag_name是entity，则返回的tag_id_index_mapping为{'B-disease': 1, 'I-disease': 2, 'L-disease': 3, 'U-disease': 4, 'O': 0}
             else:
                 tag_id_index_mapping = self._tag_id_index_mapping_for(
                     tag_name, training_data
@@ -483,7 +483,14 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
     def _find_example_for_label(
         label: Text, examples: List[Message], attribute: Text
     ) -> Optional[Message]:
-        for ex in examples:
+        """
+        yd。功能：如果Message类对象列表中，存在属性attribute的值为指定label的，则返回该Message类对象。
+        :param label:
+        :param examples:
+        :param attribute:
+        :return:
+        """
+        for ex in examples: #yd。这里的ex是一个Message类对象
             if ex.get(attribute) == label:
                 return ex
         return None
@@ -491,6 +498,12 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
     def _check_labels_features_exist(
         self, labels_example: List[Message], attribute: Text
     ) -> bool:
+        """
+        yd。功能：判断labels_example中每个label_example是否都有符合条件的Features类对象，若每个都有，则返回True，否则返回False
+        :param labels_example:
+        :param attribute:
+        :return:
+        """
         """Checks if all labels have features set."""
 
         return all(
@@ -498,7 +511,7 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
                 attribute, self.component_config[FEATURIZERS]
             )
             for label_example in labels_example
-        )
+        ) #yd。all()函数用于判断里面的所有元素是否都为True，如果是则返回True，否则返回False
 
     def _extract_features(
         self, message: Message, attribute: Text
@@ -577,6 +590,12 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
     def _extract_labels_precomputed_features(
         self, label_examples: List[Message], attribute: Text = INTENT
     ) -> Tuple[List[FeatureArray], List[FeatureArray]]:
+        """
+        yd。功能：
+        :param label_examples:
+        :param attribute:
+        :return:
+        """
         """Collects precomputed encodings."""
         features = defaultdict(list)
 
@@ -601,6 +620,11 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
     def _compute_default_label_features(
         labels_example: List[Message],
     ) -> List[FeatureArray]:
+        """
+        yd。功能：
+        :param labels_example:
+        :return:
+        """
         """Computes one-hot representation for the labels."""
         logger.debug("No label features found. Computing default label features.")
 
@@ -619,6 +643,13 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
         label_id_dict: Dict[Text, int],
         attribute: Text,
     ) -> RasaModelData:
+        """
+        yd。功能：利用training_data.intent_examples中抽取的sequence_features和sentence_features，创建RasaModelData对象并返回。
+        :param training_data:
+        :param label_id_dict:由意图与label_id组成的字典，例如{'goodbye': 0, 'greet': 1, 'medical_department': 2, 'medical_hospital': 3, 'medicine': 4}
+        :param attribute: 属性名称，例如"intent"
+        :return:
+        """
         """Create matrix with label_ids encoded in rows as bag of words.
 
         Find a training example for each label and get the encoded features
@@ -627,18 +658,18 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
         else compute a one hot encoding for the label as the feature vector.
         """
         # Collect one example for each label
-        labels_idx_examples = []
-        for label_name, idx in label_id_dict.items():
+        labels_idx_examples = [] #yd。功能：从training_data.intent_examples中找到属性attribute的值为label的Message类对象，将这些对象保存在labels_idx_examples中。
+        for label_name, idx in label_id_dict.items(): #yd。这里的label_name是意图名称，例如"greet"、"goodbye"
             label_example = self._find_example_for_label(
                 label_name, training_data.intent_examples, attribute
-            )
-            labels_idx_examples.append((idx, label_example))
+            )#yd。功能：如果Message类对象列表中，存在属性attribute的值为指定label的，则返回该Message类对象。
+            labels_idx_examples.append((idx, label_example)) #yd。这里的idx为label对应的id。
 
         # Sort the list of tuples based on label_idx
         labels_idx_examples = sorted(labels_idx_examples, key=lambda x: x[0])
         labels_example = [example for (_, example) in labels_idx_examples]
         # Collect features, precomputed if they exist, else compute on the fly
-        if self._check_labels_features_exist(labels_example, attribute):
+        if self._check_labels_features_exist(labels_example, attribute):#yd。功能：判断labels_example中每个label_example是否都有符合条件的Features类对象，若每个都有，则返回True，否则返回False
             (
                 sequence_features,
                 sentence_features,
@@ -649,7 +680,7 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
 
         label_data = RasaModelData()
         label_data.add_features(LABEL, SEQUENCE, sequence_features)
-        label_data.add_features(LABEL, SENTENCE, sentence_features)
+        label_data.add_features(LABEL, SENTENCE, sentence_features) #yd。将sequence_features和sentence_features添加到label_data这个对象中
         if label_data.does_feature_not_exist(
             LABEL, SENTENCE
         ) and label_data.does_feature_not_exist(LABEL, SEQUENCE):
@@ -694,7 +725,7 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
         from rasa.utils.tensorflow import model_data_utils
 
         attributes_to_consider = [TEXT]
-        if training and self.component_config[INTENT_CLASSIFICATION]:
+        if training and self.component_config[INTENT_CLASSIFICATION]: #yd。如果是训练阶段，且需要意图分类
             # we don't have any intent labels during prediction, just add them during
             # training
             attributes_to_consider.append(label_attribute)
@@ -735,7 +766,7 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
             entity_tag_specs=self._entity_tag_specs,
             featurizers=self.component_config[FEATURIZERS],
             bilou_tagging=self.component_config[BILOU_FLAG],
-        )
+        ) #yd。功能：①、将training_data转换成由attribute到features映射字典组成的list中；②、获取sparse matrix类型的features对应的attribute和sparse feature size。
         attribute_data, _ = model_data_utils.convert_to_data_format(
             features_for_examples, consider_dialogue_dimension=False
         )
@@ -816,27 +847,27 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
     # train helpers
     def preprocess_train_data(self, training_data: TrainingData) -> RasaModelData:
         """Prepares data for training.
-
+        #yd。功能：创建一个RasaModelData类对象并返回
         Performs sanity checks on training data, extracts encodings for labels.
         """
         if self.component_config[BILOU_FLAG]:
-            bilou_utils.apply_bilou_schema(training_data)
+            bilou_utils.apply_bilou_schema(training_data)#yd。功能：给training_data的nlu_examples中每个Message类对象的data字段中添加bilou实体标签，例如{'bilou_entities':['U-disease', 'O', 'O', 'O', 'O', 'O']}
 
         label_id_index_mapping = self._label_id_index_mapping(
             training_data, attribute=INTENT
-        )
+        )#yd。获取training_data中所有的意图类别，得到意图类别与idx的映射关系，例如{'goodbye': 0, 'greet': 1, 'medical_department': 2, 'medical_hospital': 3, 'medicine': 4}
 
         if not label_id_index_mapping:
             # no labels are present to train
             return RasaModelData()
 
-        self.index_label_id_mapping = self._invert_mapping(label_id_index_mapping)
+        self.index_label_id_mapping = self._invert_mapping(label_id_index_mapping) #yd。得到label_id与意图的映射关系，例如{0: 'goodbye', 1: 'greet', 2: 'medical_department', 3: 'medical_hospital', 4: 'medicine'}
 
         self._label_data = self._create_label_data(
             training_data, label_id_index_mapping, attribute=INTENT
         )
 
-        self._entity_tag_specs = self._create_entity_tag_specs(training_data)
+        self._entity_tag_specs = self._create_entity_tag_specs(training_data)#yd。功能：为POSSIBLE_TAGS中的各种tag_name分别创建一个EntityTagSpec类对象，这个类对象保存的是实体tag类型与id的映射关系
 
         label_attribute = (
             INTENT if self.component_config[INTENT_CLASSIFICATION] else None
@@ -845,7 +876,7 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
             training_data.nlu_examples,
             label_id_index_mapping,
             label_attribute=label_attribute,
-        )
+        ) #yd。创建一个RasaModelData类对象并返回
 
         self._check_input_dimension_consistency(model_data)
 
@@ -857,7 +888,7 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
 
     def train(self, training_data: TrainingData) -> Resource:
         """Train the embedding intent classifier on a data set."""
-        model_data = self.preprocess_train_data(training_data)
+        model_data = self.preprocess_train_data(training_data)#yd。功能：创建一个RasaModelData类对象并返回
         if model_data.is_empty():
             logger.debug(
                 f"Cannot train '{self.__class__.__name__}'. No data was provided. "
@@ -886,7 +917,7 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
             self.check_correct_entity_annotations(training_data)
 
         # keep one example for persisting and loading
-        self._data_example = model_data.first_data_example()
+        self._data_example = model_data.first_data_example() #yd。为每个key，sub-key返回一个特征
 
         if not self.finetune_mode:
             # No pre-trained model to load from. Create a new instance of the model.
@@ -930,7 +961,7 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
             shuffle=False,  # we use custom shuffle inside data generator
         )
 
-        self.persist()
+        self.persist() #yd。保存模型
 
         return self._resource
 

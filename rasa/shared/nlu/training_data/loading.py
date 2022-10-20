@@ -43,7 +43,8 @@ _json_format_heuristics: Dict[Text, Callable[[Any, Text], bool]] = {
 
 def load_data(resource_name: Text, language: Optional[Text] = "en") -> "TrainingData":
     """
-    yd。功能：读取resource_name（例如'data\\nlu.yml'）所对应的文件，解析文件中每个句子的意图和实体，用解析结果构建TrainingData类对象
+    yd。功能：读取resource_name（例如'data\\nlu.yml'）所对应的文件，解析文件中每个句子的意图和实体，用解析结果构建TrainingData类对象。
+            如果有多个TrainingData对象，则将其他的TrainingData类对象合并到首个TrainingData类对象中，最终只返回一个TrainingData类对象。
     :param resource_name:
     :param language:
     :return: training_data，由'data\\nlu.yml'中每个句子的意图和实体组成的TrainingData类对象
@@ -60,8 +61,10 @@ def load_data(resource_name: Text, language: Optional[Text] = "en") -> "Training
         files = rasa.shared.utils.io.list_files(resource_name)
 
     # yd。功能：如果filename是RASA_YAML格式，则读取文件的内容。
-    # 例如如果filename是"data/nlu.yml"，则读取文件内容，解析出nlu意图和实体训练数据，并将这些信息保存在TrainingData类对象中
+    # 例如如果filename是"data/nlu.yml"，则读取文件内容，解析出样本的意图和实体，进而为每个样本构建Message类对象，并将这些对象保存在TrainingData类对象中
     data_sets = [_load(f, language) for f in files] #yd。由TrainingData类对象组成的list
+
+    #yd。将多个data_sets中的多个TrainingData类对象合并成一个
     training_data_sets: List[TrainingData] = [ds for ds in data_sets if ds]
     if len(training_data_sets) == 0:
         training_data = TrainingData()

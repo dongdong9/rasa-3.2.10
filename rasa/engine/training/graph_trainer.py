@@ -76,7 +76,7 @@ class GraphTrainer:
                 model_configuration.train_schema,
                 importer=importer,
                 is_finetuning=is_finetuning,
-            ) #yd，以key-value对的形式返回node_name到GraphNode实例的映射
+            ) #yd，以key-value对的形式返回node_name到对应实例的映射
 
             pruned_training_schema = self._prune_schema(
                 model_configuration.train_schema, fingerprint_run_outputs
@@ -99,10 +99,10 @@ class GraphTrainer:
                 is_finetuning=is_finetuning,
             ),
             hooks=hooks,
-        )
+        ) #yd。创建一个DaskGraphRunner类对象
 
         logger.debug("Running the pruned train graph with real node execution.")
-
+        print("开始执行graph_runner.run(inputs={PLACEHOLDER_IMPORTER: importer})")
         graph_runner.run(inputs={PLACEHOLDER_IMPORTER: importer})
 
         return self._model_storage.create_model_package(
@@ -115,6 +115,13 @@ class GraphTrainer:
         importer: TrainingDataImporter,
         is_finetuning: bool = False,
     ) -> Dict[Text, Union[FingerprintStatus, Any]]:
+        """
+        yd。功能：以key-value对的形式返回node_name到对应实例的映射字典。
+        :param train_schema:
+        :param importer:
+        :param is_finetuning:
+        :return:
+        """
         """Runs the graph using fingerprints to determine which nodes need to re-run.
            #yd。使用fingerprints来运行图，用来决定哪些nodes需要重新运行。
 
@@ -131,7 +138,10 @@ class GraphTrainer:
         Returns:
             Mapping of node names to fingerprint results.
         """
-        fingerprint_schema = self._create_fingerprint_schema(train_schema)#yd。创建fingerprint_schema并返回
+
+        #yd。深拷贝train_schema这个GraphSchema类对象得到fingerprint_schema（GraphSchema类对象），并更新fingerprint_schema.nodes这个dict中
+        #    某些value（即SchemaNode类对象）中成员变量的值
+        fingerprint_schema = self._create_fingerprint_schema(train_schema)
 
         fingerprint_graph_runner = self._graph_runner_class.create(
             graph_schema=fingerprint_schema,
@@ -139,16 +149,18 @@ class GraphTrainer:
             execution_context=ExecutionContext(
                 graph_schema=train_schema, is_finetuning=is_finetuning
             ),
-        ) #yd。创建一个graph_runner
+        ) #yd。由GraphSchema类对象fingerprint_schema创建一个DaskGraphRunner类对象graph_runner
 
         logger.debug("Running the train graph in fingerprint mode.")
+        print("开始执行fingerprint_graph_runner.run(inputs={PLACEHOLDER_IMPORTER: importer})")
         return fingerprint_graph_runner.run(inputs={PLACEHOLDER_IMPORTER: importer})
 
     def _create_fingerprint_schema(self, train_schema: GraphSchema) -> GraphSchema:
         """
-        yd。功能：创建fingerprint_schema并返回
-        :param train_schema:
-        :return:
+        yd。功能：深拷贝train_schema这个GraphSchema类对象得到fingerprint_schema，并更新fingerprint_schema.nodes这个dict中
+                某些value（即SchemaNode类对象）中成员变量的值
+        :param train_schema: 是一个GraphSchema类对象
+        :return:fingerprint_schema
         """
         fingerprint_schema = copy.deepcopy(train_schema)
         for node_name, schema_node in fingerprint_schema.nodes.items():
@@ -171,6 +183,12 @@ class GraphTrainer:
         schema: GraphSchema,
         fingerprint_run_outputs: Dict[Text, Union[FingerprintStatus, Any]],
     ) -> GraphSchema:
+        """
+        yd。功能：
+        :param schema:
+        :param fingerprint_run_outputs:
+        :return:
+        """
         """Uses the fingerprint statuses to prune the graph schema.
 
         Walks the graph starting at each target node. If a node has a cache hit we
@@ -202,6 +220,13 @@ class GraphTrainer:
         current_node_name: Text,
         fingerprint_run_outputs: Dict[Text, Union[FingerprintStatus, Any]],
     ) -> None:
+        """
+        yd。功能：
+        :param schema:
+        :param current_node_name:
+        :param fingerprint_run_outputs:
+        :return:
+        """
         """Recursively walks backwards though a graph checking the status of each node.
 
         If node has a fingerprint key hit then we check if there is a cached output.

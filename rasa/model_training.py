@@ -184,6 +184,18 @@ def _train_graph(
     dry_run: bool = False,
     **kwargs: Any,
 ) -> TrainingResult:
+    """
+
+    :param file_importer: #用于读取nlu数据
+    :param training_type:
+    :param output_path: 保存模型的文件夹，默认为"models"
+    :param fixed_model_name:
+    :param model_to_finetune:
+    :param force_full_training:
+    :param dry_run:
+    :param kwargs:
+    :return:
+    """
     if model_to_finetune:
         model_to_finetune = rasa.model.get_model_for_finetuning(model_to_finetune)
         if not model_to_finetune:
@@ -209,19 +221,25 @@ def _train_graph(
         training_type,
     )#yd。根据training_type所对应的全部字段，获取config中缺失的字段，保存在missing_keys中；获取config中需要配置的字段，保存在keys_to_configure中
 
+    #yd。功能：1、利用config.yml中pipline和policies字段下的组件，构建SchemaNode，将组件名称和SchemaNode以key-value对的形式保存在train_nodes和predict_nodes中。
+    #        2、利用train_nodes和predict_nodes分别实例化两个GraphSchema对象，用这两个对象来实例化一个GraphModelConfiguration对象，并返回该对象。
     model_configuration = recipe.graph_config_for_recipe(
         config,
         kwargs,
         training_type=training_type,
         is_finetuning=is_finetuning,
     )
+
+    # yd。确保GraphModelConfiguration对象model_configuration中的train_schema和predict_schema都是有效的
     rasa.engine.validation.validate(model_configuration)
 
-    with tempfile.TemporaryDirectory() as temp_model_dir:
+    with tempfile.TemporaryDirectory() as temp_model_dir: #yd。创建一个临时文件，比如"C:\Users\Admin\AppData\Local\Temp\tmp8tmywcsk"
         model_storage = _create_model_storage(
             is_finetuning, model_to_finetune, Path(temp_model_dir)
-        )
-        cache = LocalTrainingCache()
+        )#yd。根据temp_model_dir（临时文件夹）创建一个LocalModelStorage对象
+
+        cache = LocalTrainingCache() #yd。创建一个cache文件夹（默认为.rasa/cache）
+
         trainer = GraphTrainer(model_storage, cache, DaskGraphRunner)
 
         if dry_run:
@@ -230,8 +248,8 @@ def _train_graph(
             )
             return _dry_run_result(fingerprint_status, force_full_training)
 
-        model_name = _determine_model_name(fixed_model_name, training_type)
-        full_model_path = Path(output_path, model_name)
+        model_name = _determine_model_name(fixed_model_name, training_type) #yd。获取要训练得到的模型名字，例如'nlu-20221013-152029-denim-acceleration.tar.gz'
+        full_model_path = Path(output_path, model_name) #yd。保存模型的完整路径，例如"models\nlu-20221013-152029-denim-acceleration.tar.gz"
 
         with telemetry.track_model_training(
             file_importer, model_type=training_type.model_type
@@ -242,7 +260,7 @@ def _train_graph(
                 full_model_path,
                 force_retraining=force_full_training,
                 is_finetuning=is_finetuning,
-            ) #yd。这个方法是完成真正的训练动作，得到训练模型，例如'models\20221005-161256-mechanical-ragdoll.tar.gz'
+            ) #yd。这个方法是完成模型训练，得到训练后的模型，例如'models\yyyymmdd-hhmmss-mechanical-ragdoll.tar.gz'
 
             rasa.shared.utils.cli.print_success(
                 f"Your Rasa model is trained and saved at '{full_model_path}'."
@@ -254,6 +272,13 @@ def _train_graph(
 def _create_model_storage(
     is_finetuning: bool, model_to_finetune: Optional[Path], temp_model_dir: Path
 ) -> ModelStorage:
+    """
+    yd。功能：根据temp_model_dir创建一个LocalModelStorage对象
+    :param is_finetuning:
+    :param model_to_finetune:
+    :param temp_model_dir:
+    :return:
+    """
     if is_finetuning:
         model_storage, _ = LocalModelStorage.from_model_archive(
             temp_model_dir, model_to_finetune
@@ -267,6 +292,12 @@ def _create_model_storage(
 def _determine_model_name(
     fixed_model_name: Optional[Text], training_type: TrainingType
 ) -> Text:
+    """
+    yd。确定要训练得到的模型名字，例如"nlu-20221013-152029-denim-acceleration.tar.gz"
+    :param fixed_model_name:
+    :param training_type:
+    :return:
+    """
     if fixed_model_name:
         model_file = Path(fixed_model_name)
         if not model_file.name.endswith(".tar.gz"):

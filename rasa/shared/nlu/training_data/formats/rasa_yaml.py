@@ -168,7 +168,7 @@ class RasaYAMLReader(TrainingDataReader):
             )
             return
 
-        examples = intent_data.get(KEY_INTENT_EXAMPLES, "")
+        examples = intent_data.get(KEY_INTENT_EXAMPLES, "") #yd。从intent_data字典中获取用换行符连接的样本句子。
         intent_metadata = intent_data.get(KEY_METADATA)
         for example, entities, metadata in self._parse_training_examples(
             examples, intent
