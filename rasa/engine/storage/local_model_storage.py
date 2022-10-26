@@ -69,7 +69,7 @@ class LocalModelStorage(ModelStorage):
     @classmethod
     def metadata_from_archive(
         cls, model_archive_path: Union[Text, Path]
-    ) -> ModelMetadata:
+    ) -> ModelMetadata: #yd。功能：从已经保存的模型中，获取模型的元数据（即与模型有关的各项参数，如模型的训练时间，对应的rasa源码版本等）
         """Retrieves metadata from archive (see parent class for full docstring)."""
         with tempfile.TemporaryDirectory() as temporary_directory:
             temporary_directory_path = Path(temporary_directory)

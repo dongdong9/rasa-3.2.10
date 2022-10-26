@@ -25,6 +25,11 @@ class NLUMessageConverter(GraphComponent):
         return cls()
 
     def convert_user_message(self, messages: List[UserMessage]) -> List[Message]:
+        """
+        yd。由UserMessage类对象得到Message类对象。
+        :param messages:
+        :return:
+        """
         """Converts user message into Message object.
 
         Args:

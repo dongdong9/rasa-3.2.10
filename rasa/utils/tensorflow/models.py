@@ -244,7 +244,7 @@ class RasaModel(TmpKerasModel):
 
     def _rasa_predict(
         self, batch_in: Tuple[np.ndarray, ...]
-    ) -> Dict[Text, Union[np.ndarray, Dict[Text, Any]]]:
+    ) -> Dict[Text, Union[np.ndarray, Dict[Text, Any]]]: #yd。功能：得到意图和实体识别结果，将结果以字典的形式返回
         """Custom prediction method that builds tf graph on the first call.
 
         Args:
@@ -277,7 +277,7 @@ class RasaModel(TmpKerasModel):
 
         # Once we take advantage of TF's distributed training, this is where
         # scheduled functions will be forced to execute and return actual values.
-        outputs = tf_utils.sync_to_numpy_or_python_type(self._tf_predict_step(batch_in))
+        outputs = tf_utils.sync_to_numpy_or_python_type(self._tf_predict_step(batch_in)) #yd。得到意图和实体识别结果
         if DIAGNOSTIC_DATA in outputs:
             outputs[DIAGNOSTIC_DATA] = self._empty_lists_to_none_in_dict(
                 outputs[DIAGNOSTIC_DATA]
@@ -315,7 +315,7 @@ class RasaModel(TmpKerasModel):
                 batch_in = next(data_iterator)[0]
                 batch_out: Dict[
                     Text, Union[np.ndarray, Dict[Text, Any]]
-                ] = self._rasa_predict(batch_in)
+                ] = self._rasa_predict(batch_in)#yd。得到意图和实体识别结果，将结果以字典的形式返回
                 if output_keys_expected:
                     batch_out = {
                         key: output

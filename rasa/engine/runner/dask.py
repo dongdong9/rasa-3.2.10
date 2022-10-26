@@ -88,7 +88,7 @@ class DaskGraphRunner(GraphRunner):
     ) -> Dict[Text, Any]:
         """
         yd。功能：以key-value对的形式返回node_name到GraphNode实例的映射
-        :param inputs:例如{'__importer__': NluDataImporter}
+        :param inputs:由key-value对组成的字电，例如{'__importer__': NluDataImporter}或{'message':UserMessage类对象}
         :param targets:
         :return:
         """
@@ -106,7 +106,7 @@ class DaskGraphRunner(GraphRunner):
         #      有run_graph的格式为{node_name: (GraphNode类对象，node_name对应的SchemaNode所依赖的节点名称)}
         run_graph = self._build_dask_graph(minimal_schema)
 
-        if inputs:
+        if inputs: #yd。如果input不为空
             self._add_inputs_to_graph(inputs, run_graph) #yd。将inputs这个dict更新到run_graph这个字典中
 
         logger.debug(

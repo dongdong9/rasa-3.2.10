@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 def run_cmdline(model_path: Text) -> None:
     """Loops over CLI input, passing each message to a loaded NLU model."""
-    agent = Agent.load(model_path)
+    agent = Agent.load(model_path) #yd。加载model_path对应的模型，用该模型生成DaskGraphRunner类对象，将该对象保存在agent.processor.graph_run中
 
     print_success("NLU model loaded. Type a message and press enter to parse it.")
     while True:

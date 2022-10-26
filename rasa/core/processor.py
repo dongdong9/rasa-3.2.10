@@ -95,7 +95,7 @@ class MessageProcessor:
         self.action_endpoint = action_endpoint
         self.model_filename, self.model_metadata, self.graph_runner = self._load_model(
             model_path
-        )
+        ) #yd。加载model_path对应的模型，得到self.graph_runner（DaskGraphRunner类对象）
         self.model_path = Path(model_path)
         self.domain = self.model_metadata.domain
         self.http_interpreter = http_interpreter
@@ -669,7 +669,7 @@ class MessageProcessor:
         results = self.graph_runner.run(
             inputs={PLACEHOLDER_MESSAGE: [message]},
             targets=[self.model_metadata.nlu_target],
-        )
+        ) #yd。得到意图和实体识别结果
         parsed_messages = results[self.model_metadata.nlu_target]
         parsed_message = parsed_messages[0]
         parse_data = {

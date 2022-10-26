@@ -720,7 +720,7 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
         label_id_dict: Optional[Dict[Text, int]] = None,
         label_attribute: Optional[Text] = None,
         training: bool = True,
-    ) -> RasaModelData:
+    ) -> RasaModelData: #yd。功能：将training_data中的数据进行转换，得到RasaModelData类对象
         """Prepare data for training and create a RasaModelData object."""
         from rasa.utils.tensorflow import model_data_utils
 
@@ -751,7 +751,7 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
             if message.features_present(
                 attribute=TEXT, featurizers=self.component_config.get(FEATURIZERS)
             )
-        ]
+        ] #yd。利用message.features_present()方法，从training_data中选择符合条件的message类对象，用来组成新的training_data
 
         if not training_data:
             # no training data are present to train
@@ -766,10 +766,10 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
             entity_tag_specs=self._entity_tag_specs,
             featurizers=self.component_config[FEATURIZERS],
             bilou_tagging=self.component_config[BILOU_FLAG],
-        ) #yd。功能：①、将training_data转换成由attribute到features映射字典组成的list中；②、获取sparse matrix类型的features对应的attribute和sparse feature size。
+        ) #yd。功能：①、将training_data转换成由attribute到features映射字典(例如{"text":[Features, Features]})组成的list中；②、获取sparse matrix类型的features对应的attribute和sparse feature size。
         attribute_data, _ = model_data_utils.convert_to_data_format(
             features_for_examples, consider_dialogue_dimension=False
-        )
+        ) #yd。features_for_examples这个list转换为dict格式，保存在attribute_data中
 
         model_data = RasaModelData(
             label_key=self.label_key, label_sub_key=self.label_sub_key
@@ -978,7 +978,7 @@ class DIETClassifier(GraphComponent, IntentClassifier, EntityExtractorMixin):
             return None
 
         # create session data from message and convert it into a batch of 1
-        model_data = self._create_model_data([message], training=False)
+        model_data = self._create_model_data([message], training=False) #yd。将message进行转换，得到RasaModelData类对象
         if model_data.is_empty():
             return None
         return self.model.run_inference(model_data)

@@ -141,6 +141,11 @@ class Tokenizer(GraphComponent, abc.ABC):
         return training_data
 
     def process(self, messages: List[Message]) -> List[Message]:
+        """
+        yd。功能：将Message.data这个字典中"text"字段的内容进行分词，得到每个词构成的Token类对象，将Token类对象组成的list保存在data的'text_tokens'字段中
+        :param messages:
+        :return:
+        """
         """Tokenize the incoming messages."""
         for message in messages:
             for attribute in MESSAGE_ATTRIBUTES:
@@ -152,7 +157,7 @@ class Tokenizer(GraphComponent, abc.ABC):
                     ]:
                         tokens = self._split_name(message, attribute)
                     else:
-                        tokens = self.tokenize(message, attribute)
+                        tokens = self.tokenize(message, attribute) #yd。功能：使用jieba对message.data的"text"字段进行分词，并返回由Token对象组成的list，即tokens
 
                     message.set(TOKENS_NAMES[attribute], tokens)
         return messages

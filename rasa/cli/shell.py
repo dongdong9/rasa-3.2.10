@@ -107,10 +107,10 @@ def shell(args: argparse.Namespace) -> None:
 
     args.connector = "cmdline"
 
-    model = get_validated_path(args.model, "model", DEFAULT_MODELS_PATH) #yd。获取训练好的模型的路径
+    model = get_validated_path(args.model, "model", DEFAULT_MODELS_PATH) #yd。获取训练好的模型的路径，例如"models"
 
     try:
-        model = get_local_model(model) #yd。判断当前model对应的路径是否有效，如果无效，则会触发下一行的except
+        model = get_local_model(model) #yd。判断当前model对应的路径是否有效，如果有效，则返回最新模型的路径，保存在model中，例如'models\\nlu-20221020-152636-religious-deque.tar.gz'
     except ModelNotFound:
         print_error(
             "No model found. Train a model before running the "
@@ -118,7 +118,7 @@ def shell(args: argparse.Namespace) -> None:
         )
         return
 
-    metadata = LocalModelStorage.metadata_from_archive(model)
+    metadata = LocalModelStorage.metadata_from_archive(model)#yd。功能：从已经保存的模型中，获取模型的元数据（即与模型有关的各项参数，如模型的训练时间，对应的rasa源码版本等）
 
     if metadata.training_type == TrainingType.NLU:
         import rasa.nlu.run
