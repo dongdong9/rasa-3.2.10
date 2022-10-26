@@ -18,7 +18,8 @@ DEFAULT_MAX_HISTORY = None  # Core policy history is unbounded by default.
 
 DEFAULT_RESPONSE_TIMEOUT = 60 * 60  # 1 hour
 
-DEFAULT_REQUEST_TIMEOUT = 60 * 5  # 5 minutes
+#DEFAULT_REQUEST_TIMEOUT = 60 * 5  # 5 minutes
+DEFAULT_REQUEST_TIMEOUT = 60 * 50  # 5 minutes  #yd。为了便于调试代码，而将Timeout的阈值调大
 
 #DEFAULT_STREAM_READING_TIMEOUT = 10  # in seconds
 DEFAULT_STREAM_READING_TIMEOUT = 10000  # in seconds #yd。为了便于调试代码，而将Timeout的阈值调大
