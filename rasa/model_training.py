@@ -344,8 +344,8 @@ def train_core(
     file_importer = TrainingDataImporter.load_core_importer_from_config(
         config, domain, [stories]
     )
-    stories_data = file_importer.get_stories()
-    nlu_data = file_importer.get_nlu_data()
+    stories_data = file_importer.get_stories()#yd。功能：默认读取"data/stories.yml"中stories字段，用每个story创建一个StoryStep类对象，将这些对象保存在StoryGraph类对象的成员变量story_steps中。
+    nlu_data = file_importer.get_nlu_data() #yd。功能：Rasa提供的默认动作、data\\nlu.yml中的句子、data/stories.yml中每个故事的intent和action，用他们构建Message类对象，用这些类对象来初始化TrainingData类对象
     domain = file_importer.get_domain()
 
     if nlu_data.has_e2e_examples():

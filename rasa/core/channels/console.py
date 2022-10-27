@@ -218,7 +218,7 @@ async def record_messages(
         if use_response_stream:
             bot_responses_stream = _send_message_receive_stream(
                 server_url, auth_token, sender_id, text, request_timeout=request_timeout
-            ) #yd。在这个方法中获取机器人的回答，即bot_responses_stream
+            ) #yd。在这个方法中获取机器人的回答
             previous_response = None
             async for response in bot_responses_stream:
                 if previous_response is not None:

@@ -306,7 +306,7 @@ class CombinedDataImporter(TrainingDataImporter):
     @rasa.shared.utils.common.cached_method
     def get_domain(self) -> Domain:
         """
-        yd。功能：将self._importers中每个importer的importer._domain_path（默认为？）的内容读取出来并合并，返回合并后的结果
+        yd。功能：将self._importers中每个importer的importer._domain_path（默认为domain.yml）的内容读取出来并合并，返回合并后的结果
         :return:
         """
         """Retrieves model domain (see parent class for full docstring)."""
@@ -320,6 +320,11 @@ class CombinedDataImporter(TrainingDataImporter):
 
     @rasa.shared.utils.common.cached_method
     def get_stories(self, exclusion_percentage: Optional[int] = None) -> StoryGraph:
+        """
+        yd。功能：默认读取"data/stories.yml"中stories字段，用每个story创建一个StoryStep类对象，将这些对象保存在StoryGraph类对象的成员变量story_steps中。
+        :param exclusion_percentage:
+        :return:
+        """
         """Retrieves training stories / rules (see parent class for full docstring)."""
         stories = [
             importer.get_stories(exclusion_percentage) for importer in self._importers
@@ -488,7 +493,8 @@ class ResponsesSyncImporter(TrainingDataImporter):
     def get_nlu_data(self, language: Optional[Text] = "en") -> TrainingData:
         """
         yd。功能：读取所有关于nlu data对应的文件（包括路径self._nlu_files，默认为['data\\nlu.yml']；包括路径self._domain_path，默认值为None），
-                并将读取的内容合并到一起后然后
+                并将读取的内容合并到一起后然后返回。data\\nlu.yml中每个句子构建一个Message类对象，用这些类对象列表填充TrainingData类对象的
+                entity_examples（存在实体的句子）、intent_examples（与意图有关的句子）、nlu_examples(所有与nlu有关的句子)、training_examples(所有训练的句子)
         :param language:
         :return:
         """
@@ -499,7 +505,7 @@ class ResponsesSyncImporter(TrainingDataImporter):
         # 最后将training_data_sets中的TrainingData类对象合并成一个。
         existing_nlu_data = self._importer.get_nlu_data(language)
 
-        #yd。读取self._importer的成员self._importers中每个importer的importer._nlu_files（默认值为？？）的内容，并合并
+        #yd。读取self._importer的成员self._importers中每个importer的importer._nlu_files（默认值为domain.yml）的内容，并合并
         existing_domain = self._importer.get_domain()
 
         return existing_nlu_data.merge(
@@ -581,11 +587,18 @@ class E2EImporter(TrainingDataImporter):
 
     @rasa.shared.utils.common.cached_method
     def get_nlu_data(self, language: Optional[Text] = "en") -> TrainingData:
+        """
+        yd。功能：Rasa提供的默认动作、data\\nlu.yml中的句子、data/stories.yml中每个故事的intent和action，用他们构建Message类对象，
+                 用这些类对象来初始化TrainingData类对象，将得到的TrainingData类对象保存在training_datasets这个list中，然后将这个list
+                 中的TrainingData类对象合并成一个并返回。
+        :param language:
+        :return:
+        """
         """Retrieves NLU training data (see parent class for full docstring)."""
         training_datasets = [
-            _additional_training_data_from_default_actions(),
-            self.importer.get_nlu_data(language),
-            self._additional_training_data_from_stories(),
+            _additional_training_data_from_default_actions(),#yd。功能用Rasa提供的默认动作来构建Message类对象列表，将这些Message类对象保存在TrainingData类对象的成员变量training_examples中
+            self.importer.get_nlu_data(language), #yd。功能：默认读取data\\nlu.yml，用其中每个句子构建一个Message类对象，用这些类对象列表填充TrainingData类对象的entity_examples、intent_examples、nlu_examples、training_examples
+            self._additional_training_data_from_stories(),#yd。功能：读取"data/stories.yml"中stories字段，用每个story创建intent和action分别创建两个Message类对象。用这些Message类对象填充TrainingData的成员变量training_examples
         ]
 
         return reduce(
@@ -593,8 +606,13 @@ class E2EImporter(TrainingDataImporter):
         )
 
     def _additional_training_data_from_stories(self) -> TrainingData:
-        stories = self.get_stories()
+        """
+        yd。功能：读取"data/stories.yml"中stories字段，用每个story创建intent和action分别创建两个Message类对象。用这些Message类对象填充TrainingData的成员变量training_examples
+        :return:
+        """
+        stories = self.get_stories() #yd。功能：默认读取"data/stories.yml"中stories字段，用每个story创建一个StoryStep类对象，将这些对象保存在StoryGraph类对象的成员变量story_steps中。
 
+        #yd。功能：将StoryGraph类对象中的StoryStep类对象（stories.yml中stories字段下，一个故事对应一个StoryStep类对象）按ActionExecuted类与UserUttered类分开
         utterances, actions = _unique_events_from_stories(stories)
 
         # Sort events to guarantee deterministic behavior and to avoid that the NLU
@@ -621,6 +639,11 @@ class E2EImporter(TrainingDataImporter):
 def _unique_events_from_stories(
     stories: StoryGraph,
 ) -> Tuple[Set[UserUttered], Set[ActionExecuted]]:
+    """
+    yd。功能：将StoryGraph类对象中的StoryStep类对象（stories.yml中stories字段下，一个故事对应一个StoryStep类对象）按ActionExecuted类与UserUttered类分开
+    :param stories:
+    :return:
+    """
     action_events = set()
     user_events = set()
 
@@ -650,6 +673,10 @@ def _messages_from_action(event: ActionExecuted) -> Message:
 
 
 def _additional_training_data_from_default_actions() -> TrainingData:
+    """
+    yd。功能：用Rasa提供的默认动作来构建Message类对象列表，将这些Message类对象保存在TrainingData类对象的成员变量training_examples中
+    :return:
+    """
     additional_messages_from_default_actions = [
         Message(data={ACTION_NAME: action_name})
         for action_name in rasa.shared.core.constants.DEFAULT_ACTION_NAMES

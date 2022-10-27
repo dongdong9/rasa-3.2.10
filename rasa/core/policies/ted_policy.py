@@ -154,8 +154,8 @@ class TEDPolicy(Policy):
     following steps:
         - concatenate user input (user intent and entities), previous system actions,
           slots and active forms for each time step into an input vector to
-          pre-transformer embedding layer;
-        - feed it to transformer;
+          pre-transformer embedding layer; #yd。①、将用户的输入(意图和实体)、之前系统的actions，slots和每一步的active forms拼到一起放入一个向量中
+        - feed it to transformer;          #yd。②、将向量输入到transformer中
         - apply a dense layer to the output of the transformer to get embeddings of a
           dialogue for each time step;
         - apply a dense layer to create embeddings for system actions for each time
